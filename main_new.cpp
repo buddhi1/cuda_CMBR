@@ -45,6 +45,8 @@ vector<vector<vector<int>>> instance_sum;
 
 vector<float> xMBR1; 
 vector<float> yMBR1; 
+vector<float> xMBR2; 
+vector<float> yMBR2;
 
 void print_message(string str) {
     if (true)
@@ -142,18 +144,18 @@ void getMBRList(struct table_row *data) {
 
 // select smaple data
 void preProcessMBRArray(int fid1, int fid2) {
-	for (int row = 0; irow< GRID_ROWS; ++row)
+	for (int row = 0; row< GRID_ROWS; ++row)
 	{
 		for (int col = 0; col < GRID_COLS; ++col)
 		{
-			for (int i = 0; i < mbr_array[row][col][fid1]; ++i)
+			for (int i = 0; i < mbr_array[row][col][fid1].size(); ++i)
 			{
 				xMBR1.push_back(mbr_array[row][col][fid1][i].x1);
 				xMBR1.push_back(mbr_array[row][col][fid1][i].x2);
 				yMBR1.push_back(mbr_array[row][col][fid1][i].y2);
 				yMBR1.push_back(mbr_array[row][col][fid1][i].y1);
 			}
-			for (int i = 0; i < mbr_array[row][col][fid2]; ++i)
+			for (int i = 0; i < mbr_array[row][col][fid2].size(); ++i)
 			{
 				xMBR2.push_back(mbr_array[row][col][fid2][i].x1);
 				xMBR2.push_back(mbr_array[row][col][fid2][i].x2);
@@ -176,6 +178,8 @@ int main() {
 
 	getMBRList(dat);
     print_message("mbr array constructed");
+
+    preProcessMBRArray(0,1);
 
 	return 0;
 }
