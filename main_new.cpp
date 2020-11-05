@@ -142,7 +142,26 @@ void getMBRList(struct table_row *data) {
 
 // select smaple data
 void preProcessMBRArray(int fid1, int fid2) {
-
+	for (int row = 0; irow< GRID_ROWS; ++row)
+	{
+		for (int col = 0; col < GRID_COLS; ++col)
+		{
+			for (int i = 0; i < mbr_array[row][col][fid1]; ++i)
+			{
+				xMBR1.push_back(mbr_array[row][col][fid1][i].x1);
+				xMBR1.push_back(mbr_array[row][col][fid1][i].x2);
+				yMBR1.push_back(mbr_array[row][col][fid1][i].y2);
+				yMBR1.push_back(mbr_array[row][col][fid1][i].y1);
+			}
+			for (int i = 0; i < mbr_array[row][col][fid2]; ++i)
+			{
+				xMBR2.push_back(mbr_array[row][col][fid2][i].x1);
+				xMBR2.push_back(mbr_array[row][col][fid2][i].x2);
+				yMBR2.push_back(mbr_array[row][col][fid2][i].y2);
+				yMBR2.push_back(mbr_array[row][col][fid2][i].y1);
+			}
+		}
+	}
 }
 
 int main() {
