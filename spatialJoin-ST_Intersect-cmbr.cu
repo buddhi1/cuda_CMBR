@@ -42,42 +42,67 @@ Second user input: dimSelect
     }
 //------------------------------------------------------------------------------
 
+//-----------------------------------------------------------------------------------------------------    
+
+  //populate data from mbr code
+  //read data into a table_row structure type 1D array
+  struct table_row *dat;
+  dat = createArray("data/Point_Of_Interest_modified.csv");
+
+  mbr_array.resize(GRID_ROWS, vector<vector<vector<mbr>>>(GRID_COLS, vector<vector<mbr>>(FMAX)));
+  print_message("mbr_array initialized..");
+  instance_sum.resize(GRID_ROWS, vector<vector<int>>(GRID_COLS, vector<int>(FMAX, 0))); 
+  print_message("instance_sum initialized..");
+
+  getMBRList(dat);
+  print_message("mbr array constructed");
+
+  preProcessMBRArray(0,1);
+
+  long bPolNum = xMBR1.size()/2;
+  long oPolNum = xMBR2.size()/2;
+  print_message("b size " + to_string(bPolNum));
+  print_message("o size " + to_string(oPolNum));
+
+
+//-----------------------------------------------------------------------------------------------------
+
 
 //-------------------------------------------- Reading Input -----------------------------------------------    
-    char baseFileName[100], overlayFileName[100];
-    long bPolNum, oPolNum;
-    switch(DATASET){
-       case 1:
-         bPolNum = 4646;
-	 oPolNum = 11878;
-         //strcpy(baseFileName, "/pylon5/cc560kp/danialll/Text_Datasets/admin_states.txt");
-         strcpy(baseFileName, "../admin_states.txt");
-	 //strcpy(overlayFileName, "/pylon5/cc560kp/danialll/Text_Datasets/urban_areas.txt");
-	 strcpy(overlayFileName, "../urban_areas.txt");
-         printf("\nDataset: admin - urban\n");
-         break;
-       case 2:
-         bPolNum = 15000;
-	 oPolNum = 15000;
-         strcpy(baseFileName, "/pylon5/cc560kp/danialll/Text_Datasets/bases_242.txt");
-         strcpy(overlayFileName, "/pylon5/cc560kp/danialll/Text_Datasets/overlay_300.txt");
-         printf("\nDataset: bases - overlay\n");
-         break;
-       case 3:
-         bPolNum = 15000;
-	 oPolNum = 15000;
-         strcpy(baseFileName, "/pylon5/cc560kp/danialll/Text_Datasets/block_boundaries.txt");
-         strcpy(overlayFileName, "/pylon5/cc560kp/danialll/Text_Datasets/water_bodies.txt");
-         printf("\nDataset: boundaries - water\n");
-         break;
-       case 4:
-         bPolNum = 15000;
-	 oPolNum = 15000;
-         strcpy(baseFileName, "/pylon5/cc560kp/danialll/Text_Datasets/postal.txt");
-         strcpy(overlayFileName, "/pylon5/cc560kp/danialll/Text_Datasets/sports.txt");
-         printf("\nDataset: postal - sports\n");
-         break;
-    }
+  //   char baseFileName[100], overlayFileName[100];
+  //   long bPolNum, oPolNum;
+  //   switch(DATASET){
+  //      case 1:
+  //        bPolNum = 4646;
+	 // oPolNum = 11878;
+  //        //strcpy(baseFileName, "/pylon5/cc560kp/danialll/Text_Datasets/admin_states.txt");
+  //        strcpy(baseFileName, "../admin_states.txt");
+	 // //strcpy(overlayFileName, "/pylon5/cc560kp/danialll/Text_Datasets/urban_areas.txt");
+	 // strcpy(overlayFileName, "../urban_areas.txt");
+  //        printf("\nDataset: admin - urban\n");
+  //        break;
+  //      case 2:
+  //        bPolNum = 15000;
+	 // oPolNum = 15000;
+  //        strcpy(baseFileName, "/pylon5/cc560kp/danialll/Text_Datasets/bases_242.txt");
+  //        strcpy(overlayFileName, "/pylon5/cc560kp/danialll/Text_Datasets/overlay_300.txt");
+  //        printf("\nDataset: bases - overlay\n");
+  //        break;
+  //      case 3:
+  //        bPolNum = 15000;
+	 // oPolNum = 15000;
+  //        strcpy(baseFileName, "/pylon5/cc560kp/danialll/Text_Datasets/block_boundaries.txt");
+  //        strcpy(overlayFileName, "/pylon5/cc560kp/danialll/Text_Datasets/water_bodies.txt");
+  //        printf("\nDataset: boundaries - water\n");
+  //        break;
+  //      case 4:
+  //        bPolNum = 15000;
+	 // oPolNum = 15000;
+  //        strcpy(baseFileName, "/pylon5/cc560kp/danialll/Text_Datasets/postal.txt");
+  //        strcpy(overlayFileName, "/pylon5/cc560kp/danialll/Text_Datasets/sports.txt");
+  //        printf("\nDataset: postal - sports\n");
+  //        break;
+  //   }
     //----------------------------------------- Memory Allocation -------------------------------------    
     long bVNumSum = 0, oVNumSum = 0;    
     int *bVNum=(int*)malloc(sizeof(int) * bPolNum);
@@ -103,38 +128,13 @@ Second user input: dimSelect
     seqOYMBR2 = seqYMBR2 + 2 * bPolNum;
 
     //-------------------------------------------------------------------------------------------------    
+    // ********************** cmbr edited *****************************
 
-    bPolNum=ReadTextFormatPolygon2(baseFileName,bVNum, bVPSNum, seqXMBR, seqYMBR, seqXMBR2, seqYMBR2, baseXCoords, baseYCoords, &bVNumSum, 1, bPolNum);    
-    printf("\n%lu Polygons with %lu vertices in total.\n",bPolNum,bVNumSum);
-    oPolNum=ReadTextFormatPolygon2(overlayFileName,oVNum, oVPSNum, seqOXMBR, seqOYMBR, seqOXMBR2, seqOYMBR2, overlayXCoords, overlayYCoords, &oVNumSum, 1, oPolNum);    
-    printf("\n%lu Polygons with %lu vertices in total.\n",oPolNum,oVNumSum);
+    // bPolNum=ReadTextFormatPolygon2(baseFileName,bVNum, bVPSNum, seqXMBR, seqYMBR, seqXMBR2, seqYMBR2, baseXCoords, baseYCoords, &bVNumSum, 1, bPolNum);    
+    // printf("\n%lu Polygons with %lu vertices in total.\n",bPolNum,bVNumSum);
+    // oPolNum=ReadTextFormatPolygon2(overlayFileName,oVNum, oVPSNum, seqOXMBR, seqOYMBR, seqOXMBR2, seqOYMBR2, overlayXCoords, overlayYCoords, &oVNumSum, 1, oPolNum);    
+    // printf("\n%lu Polygons with %lu vertices in total.\n",oPolNum,oVNumSum);
 //-----------------------------------------------------------------------------------------------------    
-
-
-//-----------------------------------------------------------------------------------------------------    
-
-//populate data from mbr code
-//read data into a table_row structure type 1D array
-struct table_row *dat;
-dat = createArray("data/Point_Of_Interest_modified.csv");
-
-mbr_array.resize(GRID_ROWS, vector<vector<vector<mbr>>>(GRID_COLS, vector<vector<mbr>>(FMAX)));
-print_message("mbr_array initialized..");
-instance_sum.resize(GRID_ROWS, vector<vector<int>>(GRID_COLS, vector<int>(FMAX, 0))); 
-print_message("instance_sum initialized..");
-
-getMBRList(dat);
-print_message("mbr array constructed");
-
-preProcessMBRArray(0,1);
-
-int bPolNumD = xMBR1.size()/2;
-int oPolNumD = xMBR2.size()/2;
-print_message("b size " + to_string(bPolNumD));
-print_message("o size " + to_string(oPolNumD));
-
-
-//-----------------------------------------------------------------------------------------------------
 
 //----------------------------------- Reseting GPU Device --------------------------------------------- 
     cudaError_t error_reset=cudaDeviceReset();    
@@ -177,18 +177,17 @@ print_message("o size " + to_string(oPolNumD));
     // CopyToGPU((void**)&doYMBR, seqOYMBR, 2 * sizeof(mbr_t) * oPolNum, "doYMBR", 0);
     // //-----------------------------------------------------------------------
 
-
     //-----------------------**** Transfering MBRs to GPU - CMBR edited ****-----------------------
-    cudaError_t memAlloc = cudaMalloc( (void**)&dbXMBR, 4 * sizeof(mbr_t) * (bPolNumD + oPolNumD) ); 
+    cudaError_t memAlloc = cudaMalloc( (void**)&dbXMBR, 4 * sizeof(mbr_t) * (bPolNum + oPolNum) ); 
     if(memAlloc != cudaSuccess){printf("\nError in device memory allocation!\n");return(0);}
 
-    CopyToGPU((void**)&dbXMBR, &xMBR1, 2 * sizeof(mbr_t) * bPolNumD, "dbXMBR", 0);
-    doXMBR = dbXMBR + 2 * bPolNumD;
-    CopyToGPU((void**)&doXMBR, &xMBR2, 2 * sizeof(mbr_t) * oPolNumD, "doXMBR", 0);
-    dbYMBR = doXMBR + 2 * oPolNumD;
-    CopyToGPU((void**)&dbYMBR, &yMBR1, 2 * sizeof(mbr_t) * bPolNumD, "dbYMBR", 0);
-    doYMBR = dbYMBR + 2 * bPolNumD;
-    CopyToGPU((void**)&doYMBR, &yMBR2, 2 * sizeof(mbr_t) * oPolNumD, "doYMBR", 0);
+    CopyToGPU((void**)&dbXMBR, &xMBR1, 2 * sizeof(mbr_t) * bPolNum, "dbXMBR", 0);
+    doXMBR = dbXMBR + 2 * bPolNum;
+    CopyToGPU((void**)&doXMBR, &xMBR2, 2 * sizeof(mbr_t) * oPolNum, "doXMBR", 0);
+    dbYMBR = doXMBR + 2 * oPolNum;
+    CopyToGPU((void**)&dbYMBR, &yMBR1, 2 * sizeof(mbr_t) * bPolNum, "dbYMBR", 0);
+    doYMBR = dbYMBR + 2 * bPolNum;
+    CopyToGPU((void**)&doYMBR, &yMBR2, 2 * sizeof(mbr_t) * oPolNum, "doYMBR", 0);
     //-----------------------------------------------------------------------
 
 
@@ -216,11 +215,11 @@ print_message("o size " + to_string(oPolNumD));
 //--------------------------- Find Overlaping MBRs (novel approach) -----------------------------------
     StartTimer(&start_GPU, &stop_GPU);
 
-    int *djxyCounter, *djxyVector, polNum=bPolNumD+oPolNumD; //polNum=bPolNum+oPolNum; 
+    int *djxyCounter, *djxyVector, polNum=bPolNum+oPolNum; 
     cudaMemError=cudaMalloc((void**)&djxyCounter,sizeof(int)*(polNum));
 
     // long pairNum=SortBaseMBROverlap(bPolNum, oPolNum, dbXMBR, dbYMBR, doXMBR, doYMBR, &djxyCounter, &djxyVector, dimSort, dimSelect);
-    long pairNum=SortBaseMBROverlap(bPolNumD, oPolNumD, dbXMBR, dbYMBR, doXMBR, doYMBR, &djxyCounter, &djxyVector, dimSort, dimSelect);
+    long pairNum=SortBaseMBROverlap(bPolNum, oPolNum, dbXMBR, dbYMBR, doXMBR, doYMBR, &djxyCounter, &djxyVector, dimSort, dimSelect);
    
     printf("\n\n\tPolygon pairs candidate: %ld\n", pairNum);
     float runningTime_GPU_overlap2;
