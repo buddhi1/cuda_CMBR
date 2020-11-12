@@ -49,21 +49,17 @@ Second user input: dimSelect
   struct table_row *dat;
   dat = createArray("data/Point_Of_Interest_modified.csv");
 
-  mbr_array.resize(GRID_ROWS, vector<vector<vector<mbr>>>(GRID_COLS, vector<vector<mbr>>(FMAX)));
-  print_message("mbr_array initialized..");
-  instance_sum.resize(GRID_ROWS, vector<vector<int>>(GRID_COLS, vector<int>(FMAX, 0))); 
-  print_message("instance_sum initialized..");
-
   getMBRList(dat);
   print_message("mbr array constructed");
 
   preProcessMBRArray(0,1);
 
 // ****************************************Print the xMBR1 and xMBR2 and yMBR1 and yMBR2 and verify the output.
-  printArray(xMBR1);
-  // printArray(xMBR2);
-  // printArray(yMBR1);
-  // printArray(yMBR2);
+  printArray(xMBR1, 10);
+  printArray(yMBR1, 10);
+  printArray(xMBR2, 10);
+  printArray(yMBR2, 10);
+
 
   long bPolNum = count1;
   long oPolNum = count2;
@@ -187,13 +183,13 @@ Second user input: dimSelect
     cudaError_t memAlloc = cudaMalloc( (void**)&dbXMBR, 4 * sizeof(mbr_t) * (bPolNum + oPolNum) ); 
     if(memAlloc != cudaSuccess){printf("\nError in device memory allocation!\n");return(0);}
 
-    CopyToGPU((void**)&dbXMBR, &xMBR1, 2 * sizeof(mbr_t) * bPolNum, "dbXMBR", 0);
+    CopyToGPU((void**)&dbXMBR, xMBR1, 2 * sizeof(mbr_t) * bPolNum, "dbXMBR", 0);
     doXMBR = dbXMBR + 2 * bPolNum;
-    CopyToGPU((void**)&doXMBR, &xMBR2, 2 * sizeof(mbr_t) * oPolNum, "doXMBR", 0);
+    CopyToGPU((void**)&doXMBR, xMBR2, 2 * sizeof(mbr_t) * oPolNum, "doXMBR", 0);
     dbYMBR = doXMBR + 2 * oPolNum;
-    CopyToGPU((void**)&dbYMBR, &yMBR1, 2 * sizeof(mbr_t) * bPolNum, "dbYMBR", 0);
+    CopyToGPU((void**)&dbYMBR, yMBR1, 2 * sizeof(mbr_t) * bPolNum, "dbYMBR", 0);
     doYMBR = dbYMBR + 2 * bPolNum;
-    CopyToGPU((void**)&doYMBR, &yMBR2, 2 * sizeof(mbr_t) * oPolNum, "doYMBR", 0);
+    CopyToGPU((void**)&doYMBR, yMBR2, 2 * sizeof(mbr_t) * oPolNum, "doYMBR", 0);
     //-----------------------------------------------------------------------
 
 
