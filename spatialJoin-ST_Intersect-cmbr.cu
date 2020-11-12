@@ -59,8 +59,14 @@ Second user input: dimSelect
 
   preProcessMBRArray(0,1);
 
-  long bPolNum = xMBR1.size()/2;
-  long oPolNum = xMBR2.size()/2;
+// ****************************************Print the xMBR1 and xMBR2 and yMBR1 and yMBR2 and verify the output.
+  printArray(xMBR1);
+  // printArray(xMBR2);
+  // printArray(yMBR1);
+  // printArray(yMBR2);
+
+  long bPolNum = count1;
+  long oPolNum = count2;
   print_message("b size " + to_string(bPolNum));
   print_message("o size " + to_string(oPolNum));
 

@@ -3,6 +3,11 @@
 #include <array>
 #include <bitset>
 #include <cmath> 
+#include<bits/stdc++.h>
+
+#include "Types.h" 
+
+#define MAX_COUNT 5000
 
 using namespace std;
 
@@ -37,16 +42,24 @@ int GRID_COLS;
 // grid origin
 float GRID_MIN_X, GRID_MIN_Y;
 
+int count1 = 0, count2 = 0;
+
 // saves all counts for features
 vector<int> fcount(FMAX);
 
 vector<vector<vector<vector<mbr>>>>  mbr_array;
 vector<vector<vector<int>>> instance_sum;
 
-vector<float> xMBR1; 
-vector<float> yMBR1; 
-vector<float> xMBR2; 
-vector<float> yMBR2;
+// vector<mbr_t> xMBR1;
+// vector<mbr_t> yMBR1; 
+// vector<mbr_t> xMBR2; 
+// vector<mbr_t> yMBR2;
+
+mbr_t* xMBR1 = (mbr_t*) malloc(sizeof(mbr_t) * MAX_COUNT * 4); 
+mbr_t* xMBR2 = (mbr_t*) malloc(sizeof(mbr_t) * MAX_COUNT * 4); 
+mbr_t* yMBR1 = (mbr_t*) malloc(sizeof(mbr_t) * MAX_COUNT * 4); 
+mbr_t* yMBR2 = (mbr_t*) malloc(sizeof(mbr_t) * MAX_COUNT * 4); 
+
 
 void print_message(string str) {
     if (true)
@@ -142,44 +155,90 @@ void getMBRList(struct table_row *data) {
 
 }
 
+// get how many decimal points
+long convertFloatToLong(float num) {
+    long x;
+    stringstream ss; 
+    ss << abs(num-(int)num); 
+    string s; 
+    ss >> s;
+
+    // int p = pow(10,s.length()-2);
+    // x = num*p;
+    x = num*10;
+    // cout << num*10000 << " " << s.length()-2 << " " << x << endl;
+    return x;
+}
+
 // select smaple data
 void preProcessMBRArray(int fid1, int fid2) {
+    cout << GRID_ROWS << " " << GRID_COLS << endl;
+    count1 = 0, count2 = 0;
 	for (int row = 0; row< GRID_ROWS; ++row)
 	{
 		for (int col = 0; col < GRID_COLS; ++col)
 		{
+            // if (mbr_array[row][col][fid1].size() > 0)
+            // {
+            //     cout << mbr_array[row][col][fid1].size() << endl;
+            // }
+
 			for (int i = 0; i < mbr_array[row][col][fid1].size(); ++i)
 			{
-				xMBR1.push_back(mbr_array[row][col][fid1][i].x1);
-				xMBR1.push_back(mbr_array[row][col][fid1][i].x2);
-				yMBR1.push_back(mbr_array[row][col][fid1][i].y2);
-				yMBR1.push_back(mbr_array[row][col][fid1][i].y1);
+                xMBR1[count1*4] = convertFloatToLong(mbr_array[row][col][fid1][i].x1);
+                xMBR1[count1*4+1] = convertFloatToLong(mbr_array[row][col][fid1][i].x2);
+                yMBR1[count1*4+2] = convertFloatToLong(mbr_array[row][col][fid1][i].y1);
+                yMBR1[count1*4+3] = convertFloatToLong(mbr_array[row][col][fid1][i].y2);
+
+                count1++;
+				// xMBR1.push_back(getNumDecimalDigits(mbr_array[row][col][fid1][i].x1));
+				// xMBR1.push_back(getNumDecimalDigits(mbr_array[row][col][fid1][i].x2));
+				// yMBR1.push_back(getNumDecimalDigits(mbr_array[row][col][fid1][i].y1));
+				// yMBR1.push_back(getNumDecimalDigits(mbr_array[row][col][fid1][i].y2));
 			}
 			for (int i = 0; i < mbr_array[row][col][fid2].size(); ++i)
 			{
-				xMBR2.push_back(mbr_array[row][col][fid2][i].x1);
-				xMBR2.push_back(mbr_array[row][col][fid2][i].x2);
-				yMBR2.push_back(mbr_array[row][col][fid2][i].y2);
-				yMBR2.push_back(mbr_array[row][col][fid2][i].y1);
+                xMBR2[count2*4] = convertFloatToLong(mbr_array[row][col][fid2][i].x1);
+                xMBR2[count2*4+1] = convertFloatToLong(mbr_array[row][col][fid2][i].x2);
+                yMBR2[count2*4+2] = convertFloatToLong(mbr_array[row][col][fid2][i].y1);
+                yMBR2[count2*4+3] = convertFloatToLong(mbr_array[row][col][fid2][i].y2);
+
+                count2++;
+				// xMBR2.push_back(getNumDecimalDigits(mbr_array[row][col][fid2][i].x1));
+				// xMBR2.push_back(getNumDecimalDigits(mbr_array[row][col][fid2][i].x2));
+				// yMBR2.push_back(getNumDecimalDigits(mbr_array[row][col][fid2][i].y1));
+				// yMBR2.push_back(getNumDecimalDigits(mbr_array[row][col][fid2][i].y2));
 			}
 		}
 	}
 }
 
-// int main() {
-// 	// read data into a table_row structure type 1D array
-//     struct table_row *dat;
-// 	dat = createArray("data/Point_Of_Interest_modified.csv");
+void printArray(mbr_t *x, int count) {
+    cout << "array " << count << endl;
+    for (int i = 0; i < 1; ++i)
+    {
+        cout << x[i] << " ";
+    }
+    cout << endl;
+}
 
-//     mbr_array.resize(GRID_ROWS, vector<vector<vector<mbr>>>(GRID_COLS, vector<vector<mbr>>(FMAX)));
-//     print_message("mbr_array initialized..");
-// 	instance_sum.resize(GRID_ROWS, vector<vector<int>>(GRID_COLS, vector<int>(FMAX, 0))); 
-//     print_message("instance_sum initialized..");
+int main() {
+	// read data into a table_row structure type 1D array
+    struct table_row *dat;
+	dat = createArray("data/Point_Of_Interest_modified.csv");
 
-// 	getMBRList(dat);
-//     print_message("mbr array constructed");
+    mbr_array.resize(GRID_ROWS, vector<vector<vector<mbr>>>(GRID_COLS, vector<vector<mbr>>(FMAX)));
+    print_message("mbr_array initialized..");
+	instance_sum.resize(GRID_ROWS, vector<vector<int>>(GRID_COLS, vector<int>(FMAX, 0))); 
+    print_message("instance_sum initialized..");
 
-//     preProcessMBRArray(0,1);
+	getMBRList(dat);
+    print_message("mbr array constructed");
 
-// 	return 0;
-// }
+    preProcessMBRArray(0,1);
+    // cout<<"Numbers after decimal point = "<<getNumDecimalDigits(12.351)<<endl; 
+    // printArray(xMBR1, count1);
+   
+   
+	return 0;
+}

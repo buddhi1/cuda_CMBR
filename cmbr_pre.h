@@ -3,6 +3,12 @@
 #include <array>
 #include <bitset>
 #include <cmath> 
+#include<bits/stdc++.h>
+
+
+// #include "Types.h" 
+
+#define MAX_COUNT 5000
 
 using namespace std;
 
@@ -20,6 +26,8 @@ struct mbr {
     float y2;
     bool empty = true;
 };
+
+int count1 = 0, count2 = 0;
 
 float const DIST = 200.0;
 
@@ -43,10 +51,15 @@ vector<int> fcount(FMAX);
 vector<vector<vector<vector<mbr>>>>  mbr_array;
 vector<vector<vector<int>>> instance_sum;
 
-vector<float> xMBR1; 
-vector<float> yMBR1; 
-vector<float> xMBR2; 
-vector<float> yMBR2;
+// vector<mbr_t> xMBR1; 
+// vector<mbr_t> yMBR1; 
+// vector<mbr_t> xMBR2; 
+// vector<mbr_t> yMBR2;
+
+mbr_t* xMBR1 = (mbr_t*) malloc(sizeof(mbr_t) * MAX_COUNT * 4); 
+mbr_t* xMBR2 = (mbr_t*) malloc(sizeof(mbr_t) * MAX_COUNT * 4); 
+mbr_t* yMBR1 = (mbr_t*) malloc(sizeof(mbr_t) * MAX_COUNT * 4); 
+mbr_t* yMBR2 = (mbr_t*) malloc(sizeof(mbr_t) * MAX_COUNT * 4); 
 
 void print_message(string str) {
     if (true)
@@ -142,29 +155,71 @@ void getMBRList(struct table_row *data) {
 
 }
 
+long convertFloatToLong(float num) {
+    long x;
+    stringstream ss; 
+    ss << abs(num-(int)num); 
+    string s; 
+    ss >> s;
+
+    // int p = pow(10,s.length()-2);
+    // x = num*p;
+    x = num*10;
+    // cout << num*10000 << " " << s.length()-2 << " " << x << endl;
+    return x;
+}
+
 // select smaple data
 void preProcessMBRArray(int fid1, int fid2) {
-	for (int row = 0; row< GRID_ROWS; ++row)
-	{
-		for (int col = 0; col < GRID_COLS; ++col)
-		{
-			for (int i = 0; i < mbr_array[row][col][fid1].size(); ++i)
-			{
-				xMBR1.push_back(mbr_array[row][col][fid1][i].x1);
-				xMBR1.push_back(mbr_array[row][col][fid1][i].x2);
-				yMBR1.push_back(mbr_array[row][col][fid1][i].y2);
-				yMBR1.push_back(mbr_array[row][col][fid1][i].y1);
-			}
-			for (int i = 0; i < mbr_array[row][col][fid2].size(); ++i)
-			{
-				xMBR2.push_back(mbr_array[row][col][fid2][i].x1);
-				xMBR2.push_back(mbr_array[row][col][fid2][i].x2);
-				yMBR2.push_back(mbr_array[row][col][fid2][i].y2);
-				yMBR2.push_back(mbr_array[row][col][fid2][i].y1);
-			}
-		}
-	}
+    cout << GRID_ROWS << " " << GRID_COLS << endl;
+    count1 = 0, count2 = 0;
+    for (int row = 0; row< GRID_ROWS; ++row)
+    {
+        for (int col = 0; col < GRID_COLS; ++col)
+        {
+            // if (mbr_array[row][col][fid1].size() > 0)
+            // {
+            //     cout << mbr_array[row][col][fid1].size() << endl;
+            // }
+
+            for (int i = 0; i < mbr_array[row][col][fid1].size(); ++i)
+            {
+                xMBR1[count1*4] = convertFloatToLong(mbr_array[row][col][fid1][i].x1);
+                xMBR1[count1*4+1] = convertFloatToLong(mbr_array[row][col][fid1][i].x2);
+                yMBR1[count1*4+2] = convertFloatToLong(mbr_array[row][col][fid1][i].y1);
+                yMBR1[count1*4+3] = convertFloatToLong(mbr_array[row][col][fid1][i].y2);
+
+                count1++;
+                // xMBR1.push_back(getNumDecimalDigits(mbr_array[row][col][fid1][i].x1));
+                // xMBR1.push_back(getNumDecimalDigits(mbr_array[row][col][fid1][i].x2));
+                // yMBR1.push_back(getNumDecimalDigits(mbr_array[row][col][fid1][i].y1));
+                // yMBR1.push_back(getNumDecimalDigits(mbr_array[row][col][fid1][i].y2));
+            }
+            for (int i = 0; i < mbr_array[row][col][fid2].size(); ++i)
+            {
+                xMBR2[count2*4] = convertFloatToLong(mbr_array[row][col][fid2][i].x1);
+                xMBR2[count2*4+1] = convertFloatToLong(mbr_array[row][col][fid2][i].x2);
+                yMBR2[count2*4+2] = convertFloatToLong(mbr_array[row][col][fid2][i].y1);
+                yMBR2[count2*4+3] = convertFloatToLong(mbr_array[row][col][fid2][i].y2);
+
+                count2++;
+                // xMBR2.push_back(getNumDecimalDigits(mbr_array[row][col][fid2][i].x1));
+                // xMBR2.push_back(getNumDecimalDigits(mbr_array[row][col][fid2][i].x2));
+                // yMBR2.push_back(getNumDecimalDigits(mbr_array[row][col][fid2][i].y1));
+                // yMBR2.push_back(getNumDecimalDigits(mbr_array[row][col][fid2][i].y2));
+            }
+        }
+    }
 }
+
+void printArray(mbr_t *x) {
+    for (int i = 0; i < count1; ++i)
+    {
+        cout << x[i] << " ";
+    }
+    cout << endl;
+}
+
 
 // int main() {
 // 	// read data into a table_row structure type 1D array
