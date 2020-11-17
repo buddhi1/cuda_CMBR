@@ -45,10 +45,10 @@ vector<vector<mbr>> mbr_array(FMAX);
 // vector<mbr_t> xMBR2; 
 // vector<mbr_t> yMBR2;
 
-mbr_t* xMBR1 = (mbr_t*) malloc(sizeof(mbr_t) * MAX_COUNT * 2); 
-mbr_t* xMBR2 = (mbr_t*) malloc(sizeof(mbr_t) * MAX_COUNT * 2); 
-mbr_t* yMBR1 = (mbr_t*) malloc(sizeof(mbr_t) * MAX_COUNT * 2); 
-mbr_t* yMBR2 = (mbr_t*) malloc(sizeof(mbr_t) * MAX_COUNT * 2); 
+mbr_t* xMBR1 = (mbr_t*) malloc(sizeof(mbr_t) * MAX_COUNT * 4); 
+mbr_t* xMBR2 = (mbr_t*) malloc(sizeof(mbr_t) * MAX_COUNT * 4); 
+mbr_t* yMBR1 = (mbr_t*) malloc(sizeof(mbr_t) * MAX_COUNT * 4); 
+mbr_t* yMBR2 = (mbr_t*) malloc(sizeof(mbr_t) * MAX_COUNT * 4); 
 
 
 void print_message(string str) {
@@ -142,12 +142,12 @@ long convertFloatToLong(float num) {
 void preProcessMBRArray(int fid1, int fid2) {
     count1 = 0, count2 = 0;
 
-	for (int i = 0; i < mbr_array[fid1].size(); ++i)
+	for (int i = 0; i < 5/*mbr_array[fid1].size()*/; ++i)
 	{
-        xMBR1[count1*2] = convertFloatToLong(mbr_array[fid1][i].x1);
-        xMBR1[count1*2+1] = convertFloatToLong(mbr_array[fid1][i].x2);
-        yMBR1[count1*2] = convertFloatToLong(mbr_array[fid1][i].y1);
-        yMBR1[count1*2+1] = convertFloatToLong(mbr_array[fid1][i].y2);
+        xMBR1[count1*4] = convertFloatToLong(mbr_array[fid1][i].x1);
+        xMBR1[count1*4+1] = convertFloatToLong(mbr_array[fid1][i].x2);
+        yMBR1[count1*4] = convertFloatToLong(mbr_array[fid1][i].y1);
+        yMBR1[count1*4+1] = convertFloatToLong(mbr_array[fid1][i].y2);
 
         count1++;
 		// xMBR1.push_back(getNumDecimalDigits(mbr_array[row][col][fid1][i].x1));
@@ -155,12 +155,12 @@ void preProcessMBRArray(int fid1, int fid2) {
 		// yMBR1.push_back(getNumDecimalDigits(mbr_array[row][col][fid1][i].y1));
 		// yMBR1.push_back(getNumDecimalDigits(mbr_array[row][col][fid1][i].y2));
 	}
-	for (int i = 0; i < mbr_array[fid2].size(); ++i)
+	for (int i = 0; i < 5/*mbr_array[fid2].size()*/; ++i)
 	{
-        xMBR2[count2*2] = convertFloatToLong(mbr_array[fid2][i].x1);
-        xMBR2[count2*2+1] = convertFloatToLong(mbr_array[fid2][i].x2);
-        yMBR2[count2*2] = convertFloatToLong(mbr_array[fid2][i].y1);
-        yMBR2[count2*2+1] = convertFloatToLong(mbr_array[fid2][i].y2);
+        xMBR2[count2*4] = convertFloatToLong(mbr_array[fid2][i].x1);
+        xMBR2[count2*4+1] = convertFloatToLong(mbr_array[fid2][i].x2);
+        yMBR2[count2*4] = convertFloatToLong(mbr_array[fid2][i].y1);
+        yMBR2[count2*4+1] = convertFloatToLong(mbr_array[fid2][i].y2);
 
         count2++;
 		// xMBR2.push_back(getNumDecimalDigits(mbr_array[row][col][fid2][i].x1));

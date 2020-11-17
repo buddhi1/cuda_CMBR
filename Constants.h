@@ -1,6 +1,6 @@
 #define DATASET 1
 #define MAX_BUFF 5000000
-#define MAX_DIGITS 16
+#define MAX_DIGITS 10
 #define MAX_VERTICES 100000
 #define N_b 4
 #define N_o 4
@@ -16,7 +16,7 @@
 #define MAX_CROSS_JOINT 1000
 #define bBucketLength 32
 #define oBucketLength 32
-#define PRINT_FINAL_RESULT 0
+#define PRINT_FINAL_RESULT 1
 #define MAX_EI_PER_THREAD 500
 #define EDGE_PER_THREAD 64
 #define ECC_THREAD_PER_BLOCK 1024

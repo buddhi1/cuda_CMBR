@@ -7,7 +7,7 @@
 
 // #include "Types.h" 
 
-#define MAX_COUNT 5000
+#define MAX_COUNT 9000
 
 using namespace std;
 
@@ -26,7 +26,7 @@ struct mbr {
     bool empty = true;
 };
 
-float const DIST = 200.0;
+long const DIST = 200;
 
 int const FMAX = 13;
 
@@ -40,15 +40,10 @@ vector<int> fcount(FMAX);
 
 vector<vector<mbr>> mbr_array(FMAX);
 
-// vector<mbr_t> xMBR1;
-// vector<mbr_t> yMBR1; 
-// vector<mbr_t> xMBR2; 
-// vector<mbr_t> yMBR2;
-
-mbr_t* xMBR1 = (mbr_t*) malloc(sizeof(mbr_t) * MAX_COUNT * 2); 
-mbr_t* xMBR2 = (mbr_t*) malloc(sizeof(mbr_t) * MAX_COUNT * 2); 
-mbr_t* yMBR1 = (mbr_t*) malloc(sizeof(mbr_t) * MAX_COUNT * 2); 
-mbr_t* yMBR2 = (mbr_t*) malloc(sizeof(mbr_t) * MAX_COUNT * 2); 
+mbr_t* x_MBR1 = (mbr_t*) malloc(sizeof(mbr_t) * MAX_COUNT * 2); 
+mbr_t* x_MBR2 = (mbr_t*) malloc(sizeof(mbr_t) * MAX_COUNT * 2); 
+mbr_t* y_MBR1 = (mbr_t*) malloc(sizeof(mbr_t) * MAX_COUNT * 2); 
+mbr_t* y_MBR2 = (mbr_t*) malloc(sizeof(mbr_t) * MAX_COUNT * 2); 
 
 
 void print_message(string str) {
@@ -76,13 +71,7 @@ struct table_row *createArray(const char *fileName) {
         fscanf(fp, "%d, %f, %f", &table_rows[count].id, &table_rows[count].x, &table_rows[count].y);
 
     }
-    // float x,y;
-
-    // fscanf(fp, "%f, %f, %f, %f", &GRID_MIN_X, &GRID_MIN_Y, &x, &y);
-
-    // cout << GRID_ROWS << " " << GRID_COLS << " " << GRID_MIN_X << " " << GRID_MIN_Y << endl;
-
-
+    
     fclose(fp);
     return table_rows;
 }
@@ -122,19 +111,27 @@ void getMBRList(struct table_row *data) {
     print_message("Grid set...");
 }
 
+// get number of digits of a given number
+int getDigitCount(long num) {
+    int count = 0;
+    while(num != 0) {
+        num /= 10;
+        count++;
+    }
+    return count;
+}
+
 // get how many decimal points
-long convertFloatToLong(float num) {
+long convertFloatToLong(float num, int id, int i) {
     long x;
-    // stringstream ss;
-    // int n = (int)num;
-    // ss << abs(num-n); 
-    // string s; 
-    // ss >> s;
-    // cout << num << " " << n << " " << s << " " << num-n << endl;
-    // int p = pow(10,s.length()-2);
-    // x = num*p;
+    int n;
+
     x = num*10;
-    // cout << num*10000 << " " << s.length()-2 << " " << x << endl;
+
+    if (mbr_array[id].size() <= i)
+    {
+        x = 0; 
+    }
     return x;
 }
 
@@ -142,31 +139,25 @@ long convertFloatToLong(float num) {
 void preProcessMBRArray(int fid1, int fid2) {
     count1 = 0, count2 = 0;
 
-    for (int i = 0; i < mbr_array[fid1].size(); ++i)
+    // for (int i = 0; i < /*3190*/mbr_array[fid1].size(); ++i)
+    for (int i = 0; i < MAX_COUNT /* 3190*/; ++i)
     {
-        xMBR1[count1*2] = convertFloatToLong(mbr_array[fid1][i].x1);
-        xMBR1[count1*2+1] = convertFloatToLong(mbr_array[fid1][i].x2);
-        yMBR1[count1*2] = convertFloatToLong(mbr_array[fid1][i].y1);
-        yMBR1[count1*2+1] = convertFloatToLong(mbr_array[fid1][i].y2);
+        x_MBR1[count1*2] = convertFloatToLong(mbr_array[fid1][i].x1, fid1, i);
+        x_MBR1[count1*2+1] = convertFloatToLong(mbr_array[fid1][i].x2, fid1, i);
+        y_MBR1[count1*2] = convertFloatToLong(mbr_array[fid1][i].y1, fid1, i);
+        y_MBR1[count1*2+1] = convertFloatToLong(mbr_array[fid1][i].y2, fid1, i);
 
         count1++;
-        // xMBR1.push_back(getNumDecimalDigits(mbr_array[row][col][fid1][i].x1));
-        // xMBR1.push_back(getNumDecimalDigits(mbr_array[row][col][fid1][i].x2));
-        // yMBR1.push_back(getNumDecimalDigits(mbr_array[row][col][fid1][i].y1));
-        // yMBR1.push_back(getNumDecimalDigits(mbr_array[row][col][fid1][i].y2));
     }
-    for (int i = 0; i < mbr_array[fid2].size(); ++i)
+    // for (int i = 0; i < /*3899*/mbr_array[fid2].size(); ++i)
+    for (int i = 0; i < MAX_COUNT /* 6000*/; ++i)
     {
-        xMBR2[count2*2] = convertFloatToLong(mbr_array[fid2][i].x1);
-        xMBR2[count2*2+1] = convertFloatToLong(mbr_array[fid2][i].x2);
-        yMBR2[count2*2] = convertFloatToLong(mbr_array[fid2][i].y1);
-        yMBR2[count2*2+1] = convertFloatToLong(mbr_array[fid2][i].y2);
+        x_MBR2[count2*2] = convertFloatToLong(mbr_array[fid2][i].x1, fid2, i);
+        x_MBR2[count2*2+1] = convertFloatToLong(mbr_array[fid2][i].x2, fid2, i);
+        y_MBR2[count2*2] = convertFloatToLong(mbr_array[fid2][i].y1, fid2, i);
+        y_MBR2[count2*2+1] = convertFloatToLong(mbr_array[fid2][i].y2, fid2, i);
 
         count2++;
-        // xMBR2.push_back(getNumDecimalDigits(mbr_array[row][col][fid2][i].x1));
-        // xMBR2.push_back(getNumDecimalDigits(mbr_array[row][col][fid2][i].x2));
-        // yMBR2.push_back(getNumDecimalDigits(mbr_array[row][col][fid2][i].y1));
-        // yMBR2.push_back(getNumDecimalDigits(mbr_array[row][col][fid2][i].y2));
     }
 }
 
@@ -188,10 +179,10 @@ void printArray(mbr_t *x, int count) {
 
 //     preProcessMBRArray(0,1);
 //     // cout<<"Numbers after decimal point = "<<getNumDecimalDigits(12.351)<<endl; 
-//     printArray(xMBR1, 10);
-//     printArray(yMBR1, 10);
-//     printArray(xMBR2, 10);
-//     printArray(yMBR2, 10);
+//     printArray(x_MBR1, 10);
+//     printArray(y_MBR1, 10);
+//     printArray(x_MBR2, 10);
+//     printArray(y_MBR2, 10);
    
 //    // convertFloatToLong(mbr_array[0][0].x1);
    

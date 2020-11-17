@@ -52,14 +52,13 @@ Second user input: dimSelect
   getMBRList(dat);
   print_message("mbr array constructed");
 
-  preProcessMBRArray(0,1);
+  preProcessMBRArray(5, 6);
 
 // ****************************************Print the xMBR1 and xMBR2 and yMBR1 and yMBR2 and verify the output.
-  printArray(xMBR1, 10);
-  printArray(yMBR1, 10);
-  printArray(xMBR2, 10);
-  printArray(yMBR2, 10);
-
+  printArray(x_MBR1, 10);
+  printArray(y_MBR1, 10);
+  printArray(x_MBR2, 10);
+  printArray(y_MBR2, 10);
 
   long bPolNum = count1;
   long oPolNum = count2;
@@ -183,13 +182,13 @@ Second user input: dimSelect
     cudaError_t memAlloc = cudaMalloc( (void**)&dbXMBR, 4 * sizeof(mbr_t) * (bPolNum + oPolNum) ); 
     if(memAlloc != cudaSuccess){printf("\nError in device memory allocation!\n");return(0);}
 
-    CopyToGPU((void**)&dbXMBR, xMBR1, 2 * sizeof(mbr_t) * bPolNum, "dbXMBR", 0);
+    CopyToGPU((void**)&dbXMBR, x_MBR1, 2 * sizeof(mbr_t) * bPolNum, "dbXMBR", 0);
     doXMBR = dbXMBR + 2 * bPolNum;
-    CopyToGPU((void**)&doXMBR, xMBR2, 2 * sizeof(mbr_t) * oPolNum, "doXMBR", 0);
+    CopyToGPU((void**)&doXMBR, x_MBR2, 2 * sizeof(mbr_t) * oPolNum, "doXMBR", 0);
     dbYMBR = doXMBR + 2 * oPolNum;
-    CopyToGPU((void**)&dbYMBR, yMBR1, 2 * sizeof(mbr_t) * bPolNum, "dbYMBR", 0);
+    CopyToGPU((void**)&dbYMBR, y_MBR1, 2 * sizeof(mbr_t) * bPolNum, "dbYMBR", 0);
     doYMBR = dbYMBR + 2 * bPolNum;
-    CopyToGPU((void**)&doYMBR, yMBR2, 2 * sizeof(mbr_t) * oPolNum, "doYMBR", 0);
+    CopyToGPU((void**)&doYMBR, y_MBR2, 2 * sizeof(mbr_t) * oPolNum, "doYMBR", 0);
     //-----------------------------------------------------------------------
 
 
@@ -222,6 +221,8 @@ Second user input: dimSelect
 
     // long pairNum=SortBaseMBROverlap(bPolNum, oPolNum, dbXMBR, dbYMBR, doXMBR, doYMBR, &djxyCounter, &djxyVector, dimSort, dimSelect);
     long pairNum=SortBaseMBROverlap(bPolNum, oPolNum, dbXMBR, dbYMBR, doXMBR, doYMBR, &djxyCounter, &djxyVector, dimSort, dimSelect);
+
+    printf("*******counter %d\n", &djxyCounter[1]);
    
     printf("\n\n\tPolygon pairs candidate: %ld\n", pairNum);
     float runningTime_GPU_overlap2;
