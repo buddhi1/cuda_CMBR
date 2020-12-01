@@ -14,6 +14,7 @@
 cudaEvent_t start_GPU, stop_GPU;
 
 int main(int argc, char* argv[]){  
+// int spatialJoin_ST_Intersect(int argc, char* argv[]){  
     float Join_Total_Time_SEQ=0, Join_Total_Time_GPU=0;
     cudaError_t cudaMemError;
 //------------------------ Console Input ---------------------------------- 
@@ -52,13 +53,17 @@ Second user input: dimSelect
   getMBRList(dat);
   print_message("mbr array constructed");
 
-  preProcessMBRArray(5, 6);
+  preProcessMBRArray(10, 12);
+  print_message("Pre-process done");
 
 // ****************************************Print the xMBR1 and xMBR2 and yMBR1 and yMBR2 and verify the output.
-  printArray(x_MBR1, 10);
-  printArray(y_MBR1, 10);
-  printArray(x_MBR2, 10);
-  printArray(y_MBR2, 10);
+	printArray(x_MBR1, 10);
+	printArray(y_MBR1, 10);
+	printArray(x_MBR2, 10);
+	printArray(y_MBR2, 10);
+
+	// printArray_coord_t(seq_bMBR2, 10);
+	// printArray_coord_t(seq_oMBR2, 10);
 
   long bPolNum = count1;
   long oPolNum = count2;
@@ -221,8 +226,6 @@ Second user input: dimSelect
 
     // long pairNum=SortBaseMBROverlap(bPolNum, oPolNum, dbXMBR, dbYMBR, doXMBR, doYMBR, &djxyCounter, &djxyVector, dimSort, dimSelect);
     long pairNum=SortBaseMBROverlap(bPolNum, oPolNum, dbXMBR, dbYMBR, doXMBR, doYMBR, &djxyCounter, &djxyVector, dimSort, dimSelect);
-
-    printf("*******counter %d\n", &djxyCounter[1]);
    
     printf("\n\n\tPolygon pairs candidate: %ld\n", pairNum);
     float runningTime_GPU_overlap2;
@@ -232,17 +235,17 @@ Second user input: dimSelect
     cudaFree(dbXMBR);
     cudaFree(djxyCounter);
 //------------------------------------------------------------------------------------------------------
-return(0);
 
-/*
 //---------------------------------- CMF filter for Polygon Test operation -----------------------------
     StartTimer(&start_GPU, &stop_GPU);
     int *djxy2IndexList, *djPiPIndexList, *dPiPFlag, *djoinFlag;
     char* dPiPType;
     long eiNum, pairNum3, pipNum, workLoadNum;
     coord_t *dcMBR, *dbMBR2, *doMBR2;
-    CopyToGPU((void**)&doMBR2, seqOMBR2, sizeof(coord_t)*oPolNum*4, "doMBR2", 1);
-    CopyToGPU((void**)&dbMBR2, seqMBR2, sizeof(coord_t)*bPolNum*4, "dbMBR2", 1);
+    // CopyToGPU((void**)&doMBR2, seqOMBR2, sizeof(coord_t)*oPolNum*4, "doMBR2", 1);
+    // CopyToGPU((void**)&dbMBR2, seqMBR2, sizeof(coord_t)*bPolNum*4, "dbMBR2", 1);
+    CopyToGPU((void**)&doMBR2, seq_oMBR2, sizeof(coord_t)*oPolNum*4, "doMBR2", 1);
+    CopyToGPU((void**)&dbMBR2, seq_bMBR2, sizeof(coord_t)*bPolNum*4, "dbMBR2", 1);
 
     GetCMBR(pairNum, djxyVector, dbMBR2, doMBR2, &dcMBR, &djPiPIndexList, &dPiPFlag, &dPiPType, &djoinFlag, &pipNum);
 
@@ -250,7 +253,9 @@ return(0);
     Join_Total_Time_GPU+=StopTimer(&start_GPU, &stop_GPU, &runningTime_GPU_PiPCMF);
     printf("\nGPU Running Time for CMF Filter for Point in Polygon Test: %f (%f)\n", runningTime_GPU_PiPCMF, Join_Total_Time_GPU);
 //------------------------------------------------------------------------------------------------------
+return(0);
 
+/*
 //---------------------------------- Point in Polygon Test operation -----------------------------------
     StartTimer(&start_GPU, &stop_GPU);
     long wNum;

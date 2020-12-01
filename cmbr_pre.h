@@ -7,7 +7,7 @@
 
 // #include "Types.h" 
 
-#define MAX_COUNT 9000
+#define MAX_COUNT 5000
 
 using namespace std;
 
@@ -44,6 +44,9 @@ mbr_t* x_MBR1 = (mbr_t*) malloc(sizeof(mbr_t) * MAX_COUNT * 2);
 mbr_t* x_MBR2 = (mbr_t*) malloc(sizeof(mbr_t) * MAX_COUNT * 2); 
 mbr_t* y_MBR1 = (mbr_t*) malloc(sizeof(mbr_t) * MAX_COUNT * 2); 
 mbr_t* y_MBR2 = (mbr_t*) malloc(sizeof(mbr_t) * MAX_COUNT * 2); 
+
+coord_t* seq_oMBR2 = (coord_t*) malloc(sizeof(coord_t) * MAX_COUNT * 4); 
+coord_t* seq_bMBR2 = (coord_t*) malloc(sizeof(coord_t) * MAX_COUNT * 4); 
 
 
 void print_message(string str) {
@@ -126,13 +129,38 @@ long convertFloatToLong(float num, int id, int i) {
     long x;
     int n;
 
-    x = num*10;
-
     if (mbr_array[id].size() <= i)
     {
         x = 0; 
+    } else {    
+        x = num*100;
     }
+    // cout << id << " " << mbr_array[id].size() << " " << i << " " << x << endl;
+
     return x;
+}
+
+// populate seq arrays
+void populateSeqArrays(int fid1, int fid2) {
+    int c = 0;
+    for (int i = 0; i < count1; i++)
+    {
+        seq_bMBR2[c*4] = mbr_array[fid1][i].x1;
+        seq_bMBR2[c*4+1] = mbr_array[fid1][i].y1;
+        seq_bMBR2[c*4+2] = mbr_array[fid1][i].x2;
+        seq_bMBR2[c*4+3] = mbr_array[fid1][i].y2;
+        c++;
+    }
+
+    c = 0;
+    for (int i = 0; i < count2; i++)
+    {
+        seq_oMBR2[c*4] = mbr_array[fid2][i].x1;
+        seq_oMBR2[c*4+1] = mbr_array[fid2][i].y1;
+        seq_oMBR2[c*4+2] = mbr_array[fid2][i].x2;
+        seq_oMBR2[c*4+3] = mbr_array[fid2][i].y2;
+        c++;
+    }
 }
 
 // select smaple data
@@ -152,6 +180,7 @@ void preProcessMBRArray(int fid1, int fid2) {
     // for (int i = 0; i < /*3899*/mbr_array[fid2].size(); ++i)
     for (int i = 0; i < MAX_COUNT /* 6000*/; ++i)
     {
+
         x_MBR2[count2*2] = convertFloatToLong(mbr_array[fid2][i].x1, fid2, i);
         x_MBR2[count2*2+1] = convertFloatToLong(mbr_array[fid2][i].x2, fid2, i);
         y_MBR2[count2*2] = convertFloatToLong(mbr_array[fid2][i].y1, fid2, i);
@@ -159,9 +188,18 @@ void preProcessMBRArray(int fid1, int fid2) {
 
         count2++;
     }
+    // populateSeqArrays(fid1, fid2);
 }
 
 void printArray(mbr_t *x, int count) {
+    for (int i = 0; i < count; ++i)
+    {
+        cout << x[i] << " ";
+    }
+    cout << endl;
+}
+
+void printArray_coord_t(coord_t *x, int count) {
     for (int i = 0; i < count; ++i)
     {
         cout << x[i] << " ";
