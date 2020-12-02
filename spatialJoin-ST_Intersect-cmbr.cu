@@ -237,21 +237,21 @@ Second user input: dimSelect
 //------------------------------------------------------------------------------------------------------
 
 //---------------------------------- CMF filter for Polygon Test operation -----------------------------
-    StartTimer(&start_GPU, &stop_GPU);
-    int *djxy2IndexList, *djPiPIndexList, *dPiPFlag, *djoinFlag;
-    char* dPiPType;
-    long eiNum, pairNum3, pipNum, workLoadNum;
-    coord_t *dcMBR, *dbMBR2, *doMBR2;
-    // CopyToGPU((void**)&doMBR2, seqOMBR2, sizeof(coord_t)*oPolNum*4, "doMBR2", 1);
-    // CopyToGPU((void**)&dbMBR2, seqMBR2, sizeof(coord_t)*bPolNum*4, "dbMBR2", 1);
-    CopyToGPU((void**)&doMBR2, seq_oMBR2, sizeof(coord_t)*oPolNum*4, "doMBR2", 1);
-    CopyToGPU((void**)&dbMBR2, seq_bMBR2, sizeof(coord_t)*bPolNum*4, "dbMBR2", 1);
+    // StartTimer(&start_GPU, &stop_GPU);
+    // int *djxy2IndexList, *djPiPIndexList, *dPiPFlag, *djoinFlag;
+    // char* dPiPType;
+    // long eiNum, pairNum3, pipNum, workLoadNum;
+    // coord_t *dcMBR, *dbMBR2, *doMBR2;
+    // // CopyToGPU((void**)&doMBR2, seqOMBR2, sizeof(coord_t)*oPolNum*4, "doMBR2", 1);
+    // // CopyToGPU((void**)&dbMBR2, seqMBR2, sizeof(coord_t)*bPolNum*4, "dbMBR2", 1);
+    // CopyToGPU((void**)&doMBR2, seq_oMBR2, sizeof(coord_t)*oPolNum*4, "doMBR2", 1);
+    // CopyToGPU((void**)&dbMBR2, seq_bMBR2, sizeof(coord_t)*bPolNum*4, "dbMBR2", 1);
 
-    GetCMBR(pairNum, djxyVector, dbMBR2, doMBR2, &dcMBR, &djPiPIndexList, &dPiPFlag, &dPiPType, &djoinFlag, &pipNum);
+    // GetCMBR(pairNum, djxyVector, dbMBR2, doMBR2, &dcMBR, &djPiPIndexList, &dPiPFlag, &dPiPType, &djoinFlag, &pipNum);
 
-    float runningTime_GPU_PiPCMF;
-    Join_Total_Time_GPU+=StopTimer(&start_GPU, &stop_GPU, &runningTime_GPU_PiPCMF);
-    printf("\nGPU Running Time for CMF Filter for Point in Polygon Test: %f (%f)\n", runningTime_GPU_PiPCMF, Join_Total_Time_GPU);
+    // float runningTime_GPU_PiPCMF;
+    // Join_Total_Time_GPU+=StopTimer(&start_GPU, &stop_GPU, &runningTime_GPU_PiPCMF);
+    // printf("\nGPU Running Time for CMF Filter for Point in Polygon Test: %f (%f)\n", runningTime_GPU_PiPCMF, Join_Total_Time_GPU);
 //------------------------------------------------------------------------------------------------------
 return(0);
 
