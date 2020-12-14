@@ -8,6 +8,7 @@
 // #include "Types.h" 
 
 #define MAX_COUNT 5000
+// #define MAX_COUNT 1000
 
 using namespace std;
 
@@ -44,6 +45,10 @@ mbr_t* x_MBR1 = (mbr_t*) malloc(sizeof(mbr_t) * MAX_COUNT * 2);
 mbr_t* x_MBR2 = (mbr_t*) malloc(sizeof(mbr_t) * MAX_COUNT * 2); 
 mbr_t* y_MBR1 = (mbr_t*) malloc(sizeof(mbr_t) * MAX_COUNT * 2); 
 mbr_t* y_MBR2 = (mbr_t*) malloc(sizeof(mbr_t) * MAX_COUNT * 2); 
+
+// contains instances all the features
+mbr_t* x_MBR_all; 
+mbr_t* y_MBR_all; 
 
 coord_t* seq_oMBR2 = (coord_t*) malloc(sizeof(coord_t) * MAX_COUNT * 4); 
 coord_t* seq_bMBR2 = (coord_t*) malloc(sizeof(coord_t) * MAX_COUNT * 4); 
@@ -112,6 +117,15 @@ void getMBRList(struct table_row *data) {
         fcount[k] += 1; 
     }
     print_message("Grid set...");
+}
+
+// defines size for MBR arrays
+void setMBRArrays() {
+    for (int featureID = 0; featureID < FMAX; ++featureID)
+    {
+        x_MBR_all = (mbr_t*) malloc(sizeof(mbr_t) * fcount[featureID] * 2 * FMAX);         
+        y_MBR_all = (mbr_t*) malloc(sizeof(mbr_t) * fcount[featureID] * 2 * FMAX);         
+    }
 }
 
 // get number of digits of a given number
@@ -191,10 +205,31 @@ void preProcessMBRArray(int fid1, int fid2) {
     // populateSeqArrays(fid1, fid2);
 }
 
-void printArray(mbr_t *x, int count) {
+// converts all MBR data to x_MBR_all and y_MBR_all arrays
+void preProcessAllMBRArray() {
+
+    // set arrays without having extra space
+    // setMBRArrays();
+
+    x_MBR_all = (mbr_t*) malloc(sizeof(mbr_t) * MAX_COUNT * 2 * FMAX);         
+    y_MBR_all = (mbr_t*) malloc(sizeof(mbr_t) * MAX_COUNT * 2 * FMAX); 
+
+    for (int j = 0; j < FMAX; ++j)
+    {
+        for (int i = 0; i < MAX_COUNT; ++i)
+        {
+            x_MBR_all[j*MAX_COUNT + i*2] = convertFloatToLong(mbr_array[j][i].x1, j, i);
+            x_MBR_all[j*MAX_COUNT + i*2+1] = convertFloatToLong(mbr_array[j][i].x2, j, i);
+            y_MBR_all[j*MAX_COUNT + i*2] = convertFloatToLong(mbr_array[j][i].y1, j, i);
+            y_MBR_all[j*MAX_COUNT + i*2+1] = convertFloatToLong(mbr_array[j][i].y2, j, i);
+        }
+    }
+}
+
+void printArray(mbr_t *x, int start, int count) {
     for (int i = 0; i < count; ++i)
     {
-        cout << x[i] << " ";
+        cout << x[start*MAX_COUNT + i] << " ";
     }
     cout << endl;
 }
@@ -215,12 +250,12 @@ void printArray_coord_t(coord_t *x, int count) {
 //     getMBRList(dat);
 //     print_message("mbr array constructed");
 
-//     preProcessMBRArray(0,1);
+//     preProcessAllMBRArray();
 //     // cout<<"Numbers after decimal point = "<<getNumDecimalDigits(12.351)<<endl; 
-//     printArray(x_MBR1, 10);
-//     printArray(y_MBR1, 10);
-//     printArray(x_MBR2, 10);
-//     printArray(y_MBR2, 10);
+//     printArray(x_MBR_all, 10, 10);
+//     printArray(y_MBR_all, 10, 10);
+//     printArray(x_MBR_all, 12, 10);
+//     printArray(y_MBR_all, 12, 10);
    
 //    // convertFloatToLong(mbr_array[0][0].x1);
    

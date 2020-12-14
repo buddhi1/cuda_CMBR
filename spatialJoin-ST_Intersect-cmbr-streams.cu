@@ -12,22 +12,55 @@
 #include "SEQ_Overlay.h"
 #include "GPU_Utility.h"
 #include "Data_Visualization.h"
-#include "Join.h"
+#include "Join-streams.h"
 #include "cmbr_pre.h"
 
 cudaEvent_t start_GPU, stop_GPU;
 
-int spatialJoin_ST_Intersect(int featureID1, int featureID2, int argc, char* argv[]);
+inline
+cudaError_t checkCuda(cudaError_t result)
+{
+#if defined(DEBUG) || defined(_DEBUG)
+  if (result != cudaSuccess) {
+    fprintf(stderr, "CUDA Runtime Error: %s\n", cudaGetErrorString(result));
+    assert(result == cudaSuccess);
+  }
+#endif
+  return result;
+}
+
+int spatialJoin_ST_Intersect(int featureID1, int featureID2, int argc, char* argv[], cudaStream_t stream);
 
 int main(int argc, char* argv[]) {
+   
 
-	spatialJoin_ST_Intersect(10, 12, argc, argv);
+  int devId = 0;
+
+  cudaDeviceProp prop;
+  checkCuda( cudaGetDeviceProperties(&prop, devId));
+  printf("Device : %s\n", prop.name);
+  checkCuda( cudaSetDevice(devId) );
+
+  int nStreams = 4;
+  cudaStream_t stream[nStreams];
+  // cudaStream_t stream1;
+  for (int i = 0; i < nStreams; ++i){
+    checkCuda( cudaStreamCreate(&stream[i]) );
+  }
+  // cudaStreamCreate(&stream1);
+  // spatialJoin_ST_Intersect(0, 1, argc, argv, stream1);
+
+  for (int i = 0; i < nStreams; ++i)
+  {
+    spatialJoin_ST_Intersect(0, 1, argc, argv, stream[i]);
+  }
+	
 
 	return 0;
 }
 
 // int main(int argc, char* argv[]){ 
-int spatialJoin_ST_Intersect(int featureID1, int featureID2, int argc, char* argv[]){ 
+int spatialJoin_ST_Intersect(int featureID1, int featureID2, int argc, char* argv[], cudaStream_t stream){ 
 // int spatialJoin_ST_Intersect(int argc, char* argv[]){  
     float Join_Total_Time_SEQ=0, Join_Total_Time_GPU=0;
     cudaError_t cudaMemError;
@@ -67,21 +100,20 @@ Second user input: dimSelect
   getMBRList(dat);
   print_message("mbr array constructed");
 
-	preProcessAllMBRArray();
-  
-  print_message("Pre-process done");
+	// preProcessAllMBRArray();
+
 
 // ****************************************Print the xMBR1 and xMBR2 and yMBR1 and yMBR2 and verify the output.
-	printArray(x_MBR_all, featureID1, 10);
-	printArray(y_MBR_all, featureID1, 10);
-	printArray(x_MBR_all, featureID2, 10);
-	printArray(y_MBR_all, featureID2, 10);
+	// printArray(x_MBR_all, featureID1, 10);
+	// printArray(y_MBR_all, featureID1, 10);
+	// printArray(x_MBR_all, featureID2, 10);
+	// printArray(y_MBR_all, featureID2, 10);
 
 	// printArray_coord_t(seq_bMBR2, 10);
 	// printArray_coord_t(seq_oMBR2, 10);
 
-  long bPolNum = MAXCOUNT*FMAX;
-  long oPolNum = MAXCOUNT*FMAX;
+  long bPolNum = MAX_COUNT;
+  long oPolNum = MAX_COUNT;
   print_message("b size " + to_string(bPolNum));
   print_message("o size " + to_string(oPolNum));
 
@@ -157,18 +189,18 @@ Second user input: dimSelect
     // printf("\n%lu Polygons with %lu vertices in total.\n",oPolNum,oVNumSum);
 //-----------------------------------------------------------------------------------------------------    
 
-//----------------------------------- Reseting GPU Device --------------------------------------------- 
-    cudaError_t error_reset=cudaDeviceReset();    
-    if(error_reset!=cudaSuccess)
-    {
-       fprintf(stderr,"ERROR: %s\n", cudaGetErrorString(error_reset) );
-       exit(-1);
-    }
-    cudaThreadExit();
-    size_t mem_free_0,mem_total_0;
-    cudaMemGetInfo  (&mem_free_0, &mem_total_0);
-    printf("\nFree: %lu  , Total: %lu\n",mem_free_0,mem_total_0);
-//-----------------------------------------------------------------------------------------------------    
+// //----------------------------------- Reseting GPU Device --------------------------------------------- 
+//     cudaError_t error_reset=cudaDeviceReset();    
+//     if(error_reset!=cudaSuccess)
+//     {
+//        fprintf(stderr,"ERROR: %s\n", cudaGetErrorString(error_reset) );
+//        exit(-1);
+//     }
+//     cudaThreadExit();
+//     size_t mem_free_0,mem_total_0;
+//     cudaMemGetInfo  (&mem_free_0, &mem_total_0);
+//     printf("\nFree: %lu  , Total: %lu\n",mem_free_0,mem_total_0);
+// //-----------------------------------------------------------------------------------------------------    
     
 //----------------------------------- Transfering data to GPU -----------------------------------------
     StartTimer(&start_GPU, &stop_GPU);
@@ -179,10 +211,10 @@ Second user input: dimSelect
     long *dbVPSNum, *doVPSNum;
 
     //----------- Transfering polygon number variables to GPU ---------------
-    CopyToGPU((void**)&dbVNum, bVNum, sizeof(int)*bPolNum, "dbVNum", 1);
-    CopyToGPU((void**)&doVNum, oVNum, sizeof(int)*oPolNum, "doVNum", 1);
-    CopyToGPU((void**)&dbVPSNum, bVPSNum, sizeof(long)*bPolNum, "dbVPSNum", 1);
-    CopyToGPU((void**)&doVPSNum, oVPSNum, sizeof(long)*oPolNum, "doVPSNum", 1);
+    CopyToGPU_streams((void**)&dbVNum, bVNum, sizeof(int)*bPolNum, "dbVNum", 1, stream);
+    CopyToGPU_streams((void**)&doVNum, oVNum, sizeof(int)*oPolNum, "doVNum", 1, stream);
+    CopyToGPU_streams((void**)&dbVPSNum, bVPSNum, sizeof(long)*bPolNum, "dbVPSNum", 1, stream);
+    CopyToGPU_streams((void**)&doVPSNum, oVPSNum, sizeof(long)*oPolNum, "doVPSNum", 1, stream);
     //-----------------------------------------------------------------------
 
     // //----------------------- Transfering MBRs to GPU -----------------------
@@ -199,29 +231,33 @@ Second user input: dimSelect
     // //-----------------------------------------------------------------------
 
     //-----------------------**** Transfering MBRs to GPU - CMBR edited1 ****-----------------------
-    // cudaError_t memAlloc = cudaMalloc( (void**)&dbXMBR, 4 * sizeof(mbr_t) * (bPolNum + oPolNum) ); 
-    // if(memAlloc != cudaSuccess){printf("\nError in device memory allocation!\n");return(0);}
+    preProcessMBRArray(featureID1, featureID2);
 
-    // CopyToGPU((void**)&dbXMBR, x_MBR1, 2 * sizeof(mbr_t) * bPolNum, "dbXMBR", 0);
-    // doXMBR = dbXMBR + 2 * bPolNum;
-    // CopyToGPU((void**)&doXMBR, x_MBR2, 2 * sizeof(mbr_t) * oPolNum, "doXMBR", 0);
-    // dbYMBR = doXMBR + 2 * oPolNum;
-    // CopyToGPU((void**)&dbYMBR, y_MBR1, 2 * sizeof(mbr_t) * bPolNum, "dbYMBR", 0);
-    // doYMBR = dbYMBR + 2 * bPolNum;
-    // CopyToGPU((void**)&doYMBR, y_MBR2, 2 * sizeof(mbr_t) * oPolNum, "doYMBR", 0);
-    //-----------------------------------------------------------------------
+    print_message("Pre-process done");
 
-    //-----------------------**** Transfering MBRs to GPU - CMBR edited2 ****-----------------------
     cudaError_t memAlloc = cudaMalloc( (void**)&dbXMBR, 4 * sizeof(mbr_t) * (bPolNum + oPolNum) ); 
     if(memAlloc != cudaSuccess){printf("\nError in device memory allocation!\n");return(0);}
 
-    CopyToGPU((void**)&dbXMBR, x_MBR_all, 2 * sizeof(mbr_t) * bPolNum, "dbXMBR", 0);
+    CopyToGPU_streams((void**)&dbXMBR, x_MBR1, 2 * sizeof(mbr_t) * bPolNum, "dbXMBR", 0, stream);
     doXMBR = dbXMBR + 2 * bPolNum;
-    // CopyToGPU((void**)&doXMBR, x_MBR2, 2 * sizeof(mbr_t) * oPolNum, "doXMBR", 0);
+    CopyToGPU_streams((void**)&doXMBR, x_MBR2, 2 * sizeof(mbr_t) * oPolNum, "doXMBR", 0, stream);
+    dbYMBR = doXMBR + 2 * oPolNum;
+    CopyToGPU_streams((void**)&dbYMBR, y_MBR1, 2 * sizeof(mbr_t) * bPolNum, "dbYMBR", 0, stream);
+    doYMBR = dbYMBR + 2 * bPolNum;
+    CopyToGPU_streams((void**)&doYMBR, y_MBR2, 2 * sizeof(mbr_t) * oPolNum, "doYMBR", 0, stream);
+    //-----------------------------------------------------------------------
+
+    //-----------------------**** Transfering MBRs to GPU - CMBR edited2 ****-----------------------
+    // cudaError_t memAlloc = cudaMalloc( (void**)&dbXMBR, 4 * sizeof(mbr_t) * (bPolNum + oPolNum) ); 
+    // if(memAlloc != cudaSuccess){printf("\nError in device memory allocation!\n");return(0);}
+
+    // CopyToGPU((void**)&dbXMBR, x_MBR_all + featureID1*MAX_COUNT, 2 * sizeof(mbr_t) * bPolNum, "dbXMBR", 0);
+    // doXMBR = dbXMBR + 2 * bPolNum;
+    // CopyToGPU((void**)&doXMBR, x_MBR_all + featureID2*MAX_COUNT, 2 * sizeof(mbr_t) * oPolNum, "doXMBR", 0);
     // dbYMBR = doXMBR + 2 * oPolNum;
-    CopyToGPU((void**)&dbYMBR, y_MBR_all, 2 * sizeof(mbr_t) * bPolNum, "dbYMBR", 0);
+    // CopyToGPU((void**)&dbYMBR, y_MBR_all + featureID1*MAX_COUNT, 2 * sizeof(mbr_t) * bPolNum, "dbYMBR", 0);
     // doYMBR = dbYMBR + 2 * bPolNum;
-    // CopyToGPU((void**)&doYMBR, y_MBR2, 2 * sizeof(mbr_t) * oPolNum, "doYMBR", 0);
+    // CopyToGPU((void**)&doYMBR, y_MBR_all + featureID2*MAX_COUNT, 2 * sizeof(mbr_t) * oPolNum, "doYMBR", 0);
     //-----------------------------------------------------------------------
 
 
@@ -230,16 +266,14 @@ Second user input: dimSelect
     memAlloc = cudaMalloc( (void**)&bXCoords, 2 * sizeof(coord_t) * (bVNumSum + oVNumSum)); 
     if(memAlloc != cudaSuccess){printf("\nError in device memory allocation!\n");return(0);}
 
-    CopyToGPU((void**)&bXCoords, baseXCoords, sizeof(coord_t) * bVNumSum , "bXCoords", 0);
+    CopyToGPU_streams((void**)&bXCoords, baseXCoords, sizeof(coord_t) * bVNumSum , "bXCoords", 0, stream);
     oXCoords = bXCoords + bVNumSum;
-    CopyToGPU((void**)&oXCoords, overlayXCoords, sizeof(coord_t) * oVNumSum, "oXCoords", 0);
+    CopyToGPU_streams((void**)&oXCoords, overlayXCoords, sizeof(coord_t) * oVNumSum, "oXCoords", 0, stream);
     bYCoords = oXCoords + oVNumSum;
-    CopyToGPU((void**)&bYCoords, baseYCoords, sizeof(coord_t) * bVNumSum , "bYCoords", 0);
+    CopyToGPU_streams((void**)&bYCoords, baseYCoords, sizeof(coord_t) * bVNumSum , "bYCoords", 0, stream);
     oYCoords = bYCoords + bVNumSum;
-    CopyToGPU((void**)&oYCoords, overlayYCoords, sizeof(coord_t) * oVNumSum , "oYCoords", 0);
+    CopyToGPU_streams((void**)&oYCoords, overlayYCoords, sizeof(coord_t) * oVNumSum , "oYCoords", 0, stream);
     //-----------------------------------------------------------------------
-
-    GPUSync("Transfering data to GPU");
 
     float runningTime_GPU_TransferData;
     Join_Total_Time_GPU+=StopTimer(&start_GPU, &stop_GPU, &runningTime_GPU_TransferData);
@@ -254,7 +288,8 @@ Second user input: dimSelect
     cudaMemError=cudaMalloc((void**)&djxyCounter,sizeof(int)*(polNum));
 
     // long pairNum=SortBaseMBROverlap(bPolNum, oPolNum, dbXMBR, dbYMBR, doXMBR, doYMBR, &djxyCounter, &djxyVector, dimSort, dimSelect);
-    long pairNum=SortBaseMBROverlap(bPolNum, oPolNum, dbXMBR, dbYMBR, doXMBR, doYMBR, &djxyCounter, &djxyVector, dimSort, dimSelect);
+    // long pairNum=SortBaseMBROverlap(bPolNum, oPolNum, dbXMBR, dbYMBR, doXMBR, doYMBR, &djxyCounter, &djxyVector, dimSort, dimSelect);
+    long pairNum=SortBaseMBROverlap(bPolNum, oPolNum, dbXMBR, dbYMBR, doXMBR, doYMBR, &djxyCounter, &djxyVector, dimSort, dimSelect, stream);
     // long pairNum=SortBaseMBROverlap(bPolNum, dbXMBR, dbYMBR, &djxyCounter, &djxyVector, dimSort, dimSelect);
    
     printf("\n\n\tPolygon pairs candidate: %ld\n", pairNum);

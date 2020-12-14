@@ -66,3 +66,20 @@ void CopyFromGPU(void** destinationData, void* sourceData, int dataSize, char is
    return;
 }
 //==============================================================================
+
+//============================== CopyToGPU with streams ====================================
+void CopyToGPU_streams(void** destinationData, void* sourceData, int dataSize, char* varName, char isNew, cudaStream_t stream){
+   cudaError_t cudaMemError, cudaMemError_h;
+   if(isNew){
+    cudaMemError_h = cudaMallocHost(&sourceData, dataSize);
+    cudaMemError=cudaMalloc(destinationData, dataSize);
+    
+    GPUMAllocCheck(cudaMemError, varName);
+    GPUMAllocCheck(cudaMemError_h, varName);
+   }
+    // cudaMemcpy(*destinationData, sourceData, dataSize, cudaMemcpyHostToDevice);
+   // cudaMemcpyAsync(&d_a[offset], &a[offset], streamBytes, cudaMemcpyHostToDevice, stream[i]) 
+    cudaMemcpyAsync(*destinationData, sourceData, dataSize, cudaMemcpyHostToDevice, stream);
+   return;
+}
+//==============================================================================

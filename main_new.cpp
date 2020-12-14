@@ -7,7 +7,8 @@
 
 #include "Types.h" 
 
-#define MAX_COUNT 5000
+// #define MAX_COUNT 5000
+#define MAX_COUNT 1000
 
 using namespace std;
 
@@ -26,7 +27,7 @@ struct mbr {
     bool empty = true;
 };
 
-float const DIST = 200.0;
+long const DIST = 200;
 
 int const FMAX = 13;
 
@@ -40,15 +41,17 @@ vector<int> fcount(FMAX);
 
 vector<vector<mbr>> mbr_array(FMAX);
 
-// vector<mbr_t> xMBR1;
-// vector<mbr_t> yMBR1; 
-// vector<mbr_t> xMBR2; 
-// vector<mbr_t> yMBR2;
+mbr_t* x_MBR1 = (mbr_t*) malloc(sizeof(mbr_t) * MAX_COUNT * 2); 
+mbr_t* x_MBR2 = (mbr_t*) malloc(sizeof(mbr_t) * MAX_COUNT * 2); 
+mbr_t* y_MBR1 = (mbr_t*) malloc(sizeof(mbr_t) * MAX_COUNT * 2); 
+mbr_t* y_MBR2 = (mbr_t*) malloc(sizeof(mbr_t) * MAX_COUNT * 2); 
 
-mbr_t* xMBR1 = (mbr_t*) malloc(sizeof(mbr_t) * MAX_COUNT * 4); 
-mbr_t* xMBR2 = (mbr_t*) malloc(sizeof(mbr_t) * MAX_COUNT * 4); 
-mbr_t* yMBR1 = (mbr_t*) malloc(sizeof(mbr_t) * MAX_COUNT * 4); 
-mbr_t* yMBR2 = (mbr_t*) malloc(sizeof(mbr_t) * MAX_COUNT * 4); 
+// contains instances all the features
+mbr_t* x_MBR_all; 
+mbr_t* y_MBR_all; 
+
+coord_t* seq_oMBR2 = (coord_t*) malloc(sizeof(coord_t) * MAX_COUNT * 4); 
+coord_t* seq_bMBR2 = (coord_t*) malloc(sizeof(coord_t) * MAX_COUNT * 4); 
 
 
 void print_message(string str) {
@@ -60,30 +63,24 @@ void print_message(string str) {
 
 // read file data and retunr data as an object array
 struct table_row *createArray(const char *fileName) {
-	FILE *fp = fopen(fileName, "r");
+    FILE *fp = fopen(fileName, "r");
 
-	if (!fp) {
+    if (!fp) {
         print_message("Can not open file\n");
         return NULL;
     }
-	
-	fscanf(fp, "%d", &ROWS);
-	// cout << "Total rows: " << ROWS << endl;
+    
+    fscanf(fp, "%d", &ROWS);
+    // cout << "Total rows: " << ROWS << endl;
 
-	struct table_row* table_rows = (struct table_row*)malloc(sizeof(struct table_row) * ROWS);
-	
-	for (int count = 0; count < ROWS; ++count) {
-		fscanf(fp, "%d, %f, %f", &table_rows[count].id, &table_rows[count].x, &table_rows[count].y);
+    struct table_row* table_rows = (struct table_row*)malloc(sizeof(struct table_row) * ROWS);
+    
+    for (int count = 0; count < ROWS; ++count) {
+        fscanf(fp, "%d, %f, %f", &table_rows[count].id, &table_rows[count].x, &table_rows[count].y);
 
-	}
-	// float x,y;
-
-	// fscanf(fp, "%f, %f, %f, %f", &GRID_MIN_X, &GRID_MIN_Y, &x, &y);
-
-	// cout << GRID_ROWS << " " << GRID_COLS << " " << GRID_MIN_X << " " << GRID_MIN_Y << endl;
-
-
-	fclose(fp);
+    }
+    
+    fclose(fp);
     return table_rows;
 }
 
@@ -122,55 +119,122 @@ void getMBRList(struct table_row *data) {
     print_message("Grid set...");
 }
 
+// defines size for MBR arrays
+void setMBRArrays() {
+    for (int featureID = 0; featureID < FMAX; ++featureID)
+    {
+        x_MBR_all = (mbr_t*) malloc(sizeof(mbr_t) * fcount[featureID] * 2 * FMAX);         
+        y_MBR_all = (mbr_t*) malloc(sizeof(mbr_t) * fcount[featureID] * 2 * FMAX);         
+    }
+}
+
+// get number of digits of a given number
+int getDigitCount(long num) {
+    int count = 0;
+    while(num != 0) {
+        num /= 10;
+        count++;
+    }
+    return count;
+}
+
 // get how many decimal points
-long convertFloatToLong(float num) {
+long convertFloatToLong(float num, int id, int i) {
     long x;
-    // stringstream ss;
-    // int n = (int)num;
-    // ss << abs(num-n); 
-    // string s; 
-    // ss >> s;
-    // cout << num << " " << n << " " << s << " " << num-n << endl;
-    // int p = pow(10,s.length()-2);
-    // x = num*p;
-    x = num*10;
-    // cout << num*10000 << " " << s.length()-2 << " " << x << endl;
+    int n;
+
+    if (mbr_array[id].size() <= i)
+    {
+        x = 0; 
+    } else {    
+        x = num*100;
+    }
+    // cout << id << " " << mbr_array[id].size() << " " << i << " " << x << endl;
+
     return x;
+}
+
+// populate seq arrays
+void populateSeqArrays(int fid1, int fid2) {
+    int c = 0;
+    for (int i = 0; i < count1; i++)
+    {
+        seq_bMBR2[c*4] = mbr_array[fid1][i].x1;
+        seq_bMBR2[c*4+1] = mbr_array[fid1][i].y1;
+        seq_bMBR2[c*4+2] = mbr_array[fid1][i].x2;
+        seq_bMBR2[c*4+3] = mbr_array[fid1][i].y2;
+        c++;
+    }
+
+    c = 0;
+    for (int i = 0; i < count2; i++)
+    {
+        seq_oMBR2[c*4] = mbr_array[fid2][i].x1;
+        seq_oMBR2[c*4+1] = mbr_array[fid2][i].y1;
+        seq_oMBR2[c*4+2] = mbr_array[fid2][i].x2;
+        seq_oMBR2[c*4+3] = mbr_array[fid2][i].y2;
+        c++;
+    }
 }
 
 // select smaple data
 void preProcessMBRArray(int fid1, int fid2) {
     count1 = 0, count2 = 0;
 
-	for (int i = 0; i < 5/*mbr_array[fid1].size()*/; ++i)
-	{
-        xMBR1[count1*4] = convertFloatToLong(mbr_array[fid1][i].x1);
-        xMBR1[count1*4+1] = convertFloatToLong(mbr_array[fid1][i].x2);
-        yMBR1[count1*4] = convertFloatToLong(mbr_array[fid1][i].y1);
-        yMBR1[count1*4+1] = convertFloatToLong(mbr_array[fid1][i].y2);
+    // for (int i = 0; i < /*3190*/mbr_array[fid1].size(); ++i)
+    for (int i = 0; i < MAX_COUNT /* 3190*/; ++i)
+    {
+        x_MBR1[count1*2] = convertFloatToLong(mbr_array[fid1][i].x1, fid1, i);
+        x_MBR1[count1*2+1] = convertFloatToLong(mbr_array[fid1][i].x2, fid1, i);
+        y_MBR1[count1*2] = convertFloatToLong(mbr_array[fid1][i].y1, fid1, i);
+        y_MBR1[count1*2+1] = convertFloatToLong(mbr_array[fid1][i].y2, fid1, i);
 
         count1++;
-		// xMBR1.push_back(getNumDecimalDigits(mbr_array[row][col][fid1][i].x1));
-		// xMBR1.push_back(getNumDecimalDigits(mbr_array[row][col][fid1][i].x2));
-		// yMBR1.push_back(getNumDecimalDigits(mbr_array[row][col][fid1][i].y1));
-		// yMBR1.push_back(getNumDecimalDigits(mbr_array[row][col][fid1][i].y2));
-	}
-	for (int i = 0; i < 5/*mbr_array[fid2].size()*/; ++i)
-	{
-        xMBR2[count2*4] = convertFloatToLong(mbr_array[fid2][i].x1);
-        xMBR2[count2*4+1] = convertFloatToLong(mbr_array[fid2][i].x2);
-        yMBR2[count2*4] = convertFloatToLong(mbr_array[fid2][i].y1);
-        yMBR2[count2*4+1] = convertFloatToLong(mbr_array[fid2][i].y2);
+    }
+    // for (int i = 0; i < /*3899*/mbr_array[fid2].size(); ++i)
+    for (int i = 0; i < MAX_COUNT /* 6000*/; ++i)
+    {
+
+        x_MBR2[count2*2] = convertFloatToLong(mbr_array[fid2][i].x1, fid2, i);
+        x_MBR2[count2*2+1] = convertFloatToLong(mbr_array[fid2][i].x2, fid2, i);
+        y_MBR2[count2*2] = convertFloatToLong(mbr_array[fid2][i].y1, fid2, i);
+        y_MBR2[count2*2+1] = convertFloatToLong(mbr_array[fid2][i].y2, fid2, i);
 
         count2++;
-		// xMBR2.push_back(getNumDecimalDigits(mbr_array[row][col][fid2][i].x1));
-		// xMBR2.push_back(getNumDecimalDigits(mbr_array[row][col][fid2][i].x2));
-		// yMBR2.push_back(getNumDecimalDigits(mbr_array[row][col][fid2][i].y1));
-		// yMBR2.push_back(getNumDecimalDigits(mbr_array[row][col][fid2][i].y2));
-	}
+    }
+    // populateSeqArrays(fid1, fid2);
 }
 
-void printArray(mbr_t *x, int count) {
+// converts all MBR data to x_MBR_all and y_MBR_all arrays
+void preProcessAllMBRArray() {
+
+    // set arrays without having extra space
+    // setMBRArrays();
+
+    x_MBR_all = (mbr_t*) malloc(sizeof(mbr_t) * MAX_COUNT * 2 * FMAX);         
+    y_MBR_all = (mbr_t*) malloc(sizeof(mbr_t) * MAX_COUNT * 2 * FMAX); 
+
+    for (int j = 0; j < FMAX; ++j)
+    {
+        for (int i = 0; i < MAX_COUNT; ++i)
+        {
+            x_MBR_all[j*MAX_COUNT + i*2] = convertFloatToLong(mbr_array[j][i].x1, j, i);
+            x_MBR_all[j*MAX_COUNT + i*2+1] = convertFloatToLong(mbr_array[j][i].x2, j, i);
+            y_MBR_all[j*MAX_COUNT + i*2] = convertFloatToLong(mbr_array[j][i].y1, j, i);
+            y_MBR_all[j*MAX_COUNT + i*2+1] = convertFloatToLong(mbr_array[j][i].y2, j, i);
+        }
+    }
+}
+
+void printArray(mbr_t *x, int start, int count) {
+    for (int i = start; i < count; ++i)
+    {
+        cout << x[i] << " ";
+    }
+    cout << endl;
+}
+
+void printArray_coord_t(coord_t *x, int count) {
     for (int i = 0; i < count; ++i)
     {
         cout << x[i] << " ";
@@ -179,21 +243,21 @@ void printArray(mbr_t *x, int count) {
 }
 
 int main() {
-	// read data into a table_row structure type 1D array
+    // read data into a table_row structure type 1D array
     struct table_row *dat;
-	dat = createArray("data/Point_Of_Interest_modified.csv");
+    dat = createArray("data/Point_Of_Interest_modified.csv");
 
-	getMBRList(dat);
+    getMBRList(dat);
     print_message("mbr array constructed");
 
-    preProcessMBRArray(0,1);
+    preProcessAllMBRArray();
     // cout<<"Numbers after decimal point = "<<getNumDecimalDigits(12.351)<<endl; 
-    printArray(xMBR1, 10);
-    printArray(yMBR1, 10);
-    printArray(xMBR2, 10);
-    printArray(yMBR2, 10);
+    printArray(x_MBR_all, 10, 10);
+    printArray(y_MBR_all, 10, 10);
+    printArray(x_MBR_all, 12, 10);
+    printArray(y_MBR_all, 12, 10);
    
    // convertFloatToLong(mbr_array[0][0].x1);
    
-	return 0;
+    return 0;
 }
