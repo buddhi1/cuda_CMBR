@@ -10,7 +10,7 @@
 #include "GPU_MBR.h"
 #include "IO.h"
 #include "SEQ_Overlay.h"
-#include "GPU_Utility.h"
+#include "GPU_Utility-streams.h"
 #include "Data_Visualization.h"
 #include "Join-streams.h"
 #include "cmbr_pre.h"
@@ -36,12 +36,12 @@ int main(int argc, char* argv[]) {
 
   int devId = 0;
 
-  cudaDeviceProp prop;
-  checkCuda( cudaGetDeviceProperties(&prop, devId));
-  printf("Device : %s\n", prop.name);
-  checkCuda( cudaSetDevice(devId) );
+  // cudaDeviceProp prop;
+  // checkCuda( cudaGetDeviceProperties(&prop, devId));
+  // printf("Device : %s\n", prop.name);
+  // checkCuda( cudaSetDevice(devId) );
 
-  int nStreams = 4;
+  int nStreams = 3;
   cudaStream_t stream[nStreams];
   // cudaStream_t stream1;
   for (int i = 0; i < nStreams; ++i){
@@ -50,9 +50,25 @@ int main(int argc, char* argv[]) {
   // cudaStreamCreate(&stream1);
   // spatialJoin_ST_Intersect(0, 1, argc, argv, stream1);
 
+  //populate data from mbr code
+  //read data into a table_row structure type 1D array
+  struct table_row *dat;
+  dat = createArray("data/Point_Of_Interest_modified.csv");
+
+  getMBRList(dat);
+  print_message("mbr array constructed");
+
+  preProcessAllMBRArray();
+  
+
+  int layer2 = 1;
+
   for (int i = 0; i < nStreams; ++i)
   {
-    spatialJoin_ST_Intersect(0, 1, argc, argv, stream[i]);
+    if (i != layer2)
+    {
+      spatialJoin_ST_Intersect(i, layer2, argc, argv, stream[i]);
+    }    
   }
 	
 
@@ -73,35 +89,24 @@ Second user input: dimSelect
 	If dimSort=1, this argument define which dimension should be picked for sorting (Values could be 'X' or 'Y')
 */
     int dimSort=1, dimSelect=1;
-    if(argc<2){
-       dimSort=1;
-       dimSelect=0;
-    }
-    else if(argc<3){
-      if(argv[1][0]=='2')dimSort=2;
-      else dimSort=1;
-      dimSelect=0;
-    }
-    else if(argc<4){
-      if(argv[2][0]=='y')dimSelect=1;
-      else dimSelect=0;
-      if(argv[1][0]=='2'){dimSort=2;dimSelect=0;}
-      else dimSort=1;
-    }
+    // if(argc<2){
+    //    dimSort=1;
+    //    dimSelect=0;
+    // }
+    // else if(argc<3){
+    //   if(argv[1][0]=='2')dimSort=2;
+    //   else dimSort=1;
+    //   dimSelect=0;
+    // }
+    // else if(argc<4){
+    //   if(argv[2][0]=='y')dimSelect=1;
+    //   else dimSelect=0;
+    //   if(argv[1][0]=='2'){dimSort=2;dimSelect=0;}
+    //   else dimSort=1;
+    // }
 //------------------------------------------------------------------------------
 
 //-----------------------------------------------------------------------------------------------------    
-
-  //populate data from mbr code
-  //read data into a table_row structure type 1D array
-  struct table_row *dat;
-  dat = createArray("data/Point_Of_Interest_modified.csv");
-
-  getMBRList(dat);
-  print_message("mbr array constructed");
-
-	// preProcessAllMBRArray();
-
 
 // ****************************************Print the xMBR1 and xMBR2 and yMBR1 and yMBR2 and verify the output.
 	// printArray(x_MBR_all, featureID1, 10);
