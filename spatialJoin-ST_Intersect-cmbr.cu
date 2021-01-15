@@ -67,21 +67,22 @@ Second user input: dimSelect
   getMBRList(dat);
   print_message("mbr array constructed");
 
-	preProcessAllMBRArray();
+  prefixSumSizes();
+  preProcessTO2Layers(1);
   
   print_message("Pre-process done");
 
 // ****************************************Print the xMBR1 and xMBR2 and yMBR1 and yMBR2 and verify the output.
-	printArray(x_MBR_all, featureID1, 10);
-	printArray(y_MBR_all, featureID1, 10);
-	printArray(x_MBR_all, featureID2, 10);
-	printArray(y_MBR_all, featureID2, 10);
+	printArray(x_MBR1, 10);
+	printArray(y_MBR1, 10);
+	printArray(x_MBR2, 10);
+	printArray(y_MBR2, 10);
 
 	// printArray_coord_t(seq_bMBR2, 10);
 	// printArray_coord_t(seq_oMBR2, 10);
 
-  long bPolNum = MAXCOUNT*FMAX;
-  long oPolNum = MAXCOUNT*FMAX;
+  long bPolNum = count1;
+  long oPolNum = count2;
   print_message("b size " + to_string(bPolNum));
   print_message("o size " + to_string(oPolNum));
 
@@ -199,29 +200,29 @@ Second user input: dimSelect
     // //-----------------------------------------------------------------------
 
     //-----------------------**** Transfering MBRs to GPU - CMBR edited1 ****-----------------------
-    // cudaError_t memAlloc = cudaMalloc( (void**)&dbXMBR, 4 * sizeof(mbr_t) * (bPolNum + oPolNum) ); 
-    // if(memAlloc != cudaSuccess){printf("\nError in device memory allocation!\n");return(0);}
-
-    // CopyToGPU((void**)&dbXMBR, x_MBR1, 2 * sizeof(mbr_t) * bPolNum, "dbXMBR", 0);
-    // doXMBR = dbXMBR + 2 * bPolNum;
-    // CopyToGPU((void**)&doXMBR, x_MBR2, 2 * sizeof(mbr_t) * oPolNum, "doXMBR", 0);
-    // dbYMBR = doXMBR + 2 * oPolNum;
-    // CopyToGPU((void**)&dbYMBR, y_MBR1, 2 * sizeof(mbr_t) * bPolNum, "dbYMBR", 0);
-    // doYMBR = dbYMBR + 2 * bPolNum;
-    // CopyToGPU((void**)&doYMBR, y_MBR2, 2 * sizeof(mbr_t) * oPolNum, "doYMBR", 0);
-    //-----------------------------------------------------------------------
-
-    //-----------------------**** Transfering MBRs to GPU - CMBR edited2 ****-----------------------
     cudaError_t memAlloc = cudaMalloc( (void**)&dbXMBR, 4 * sizeof(mbr_t) * (bPolNum + oPolNum) ); 
     if(memAlloc != cudaSuccess){printf("\nError in device memory allocation!\n");return(0);}
 
-    CopyToGPU((void**)&dbXMBR, x_MBR_all, 2 * sizeof(mbr_t) * bPolNum, "dbXMBR", 0);
+    CopyToGPU((void**)&dbXMBR, x_MBR1, 2 * sizeof(mbr_t) * bPolNum, "dbXMBR", 0);
     doXMBR = dbXMBR + 2 * bPolNum;
-    // CopyToGPU((void**)&doXMBR, x_MBR2, 2 * sizeof(mbr_t) * oPolNum, "doXMBR", 0);
-    // dbYMBR = doXMBR + 2 * oPolNum;
-    CopyToGPU((void**)&dbYMBR, y_MBR_all, 2 * sizeof(mbr_t) * bPolNum, "dbYMBR", 0);
-    // doYMBR = dbYMBR + 2 * bPolNum;
-    // CopyToGPU((void**)&doYMBR, y_MBR2, 2 * sizeof(mbr_t) * oPolNum, "doYMBR", 0);
+    CopyToGPU((void**)&doXMBR, x_MBR2, 2 * sizeof(mbr_t) * oPolNum, "doXMBR", 0);
+    dbYMBR = doXMBR + 2 * oPolNum;
+    CopyToGPU((void**)&dbYMBR, y_MBR1, 2 * sizeof(mbr_t) * bPolNum, "dbYMBR", 0);
+    doYMBR = dbYMBR + 2 * bPolNum;
+    CopyToGPU((void**)&doYMBR, y_MBR2, 2 * sizeof(mbr_t) * oPolNum, "doYMBR", 0);
+    //-----------------------------------------------------------------------
+
+    //-----------------------**** Transfering MBRs to GPU - CMBR edited2 ****-----------------------
+    // cudaError_t memAlloc = cudaMalloc( (void**)&dbXMBR, 4 * sizeof(mbr_t) * (bPolNum + oPolNum) ); 
+    // if(memAlloc != cudaSuccess){printf("\nError in device memory allocation!\n");return(0);}
+
+    // CopyToGPU((void**)&dbXMBR, x_MBR_all, 2 * sizeof(mbr_t) * bPolNum, "dbXMBR", 0);
+    // doXMBR = dbXMBR + 2 * bPolNum;
+    // // CopyToGPU((void**)&doXMBR, x_MBR2, 2 * sizeof(mbr_t) * oPolNum, "doXMBR", 0);
+    // // dbYMBR = doXMBR + 2 * oPolNum;
+    // CopyToGPU((void**)&dbYMBR, y_MBR_all, 2 * sizeof(mbr_t) * bPolNum, "dbYMBR", 0);
+    // // doYMBR = dbYMBR + 2 * bPolNum;
+    // // CopyToGPU((void**)&doYMBR, y_MBR2, 2 * sizeof(mbr_t) * oPolNum, "doYMBR", 0);
     //-----------------------------------------------------------------------
 
 

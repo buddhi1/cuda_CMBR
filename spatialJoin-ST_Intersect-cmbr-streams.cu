@@ -34,7 +34,7 @@ int spatialJoin_ST_Intersect(int featureID1, int featureID2, int argc, char* arg
 int main(int argc, char* argv[]) {
    
 
-  int devId = 0;
+  // int devId = 0;
 
   // cudaDeviceProp prop;
   // checkCuda( cudaGetDeviceProperties(&prop, devId));
@@ -58,7 +58,7 @@ int main(int argc, char* argv[]) {
   getMBRList(dat);
   print_message("mbr array constructed");
 
-  preProcessAllMBRArray();
+  // preProcessAllMBRArray();
   
 
   int layer2 = 1;

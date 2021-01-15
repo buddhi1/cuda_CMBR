@@ -2,8 +2,7 @@
 
 
 //====================================== SortBaseMBROverlap ====================================================
-// long SortBaseMBROverlap(long bPolNum, long oPolNum, mbr_t* dbXMBR, mbr_t* dbYMBR, mbr_t* doXMBR, mbr_t* doYMBR, int** djxyCounter, int** djxyVector, char dimSort, char dimSelect){
-long SortBaseMBROverlap(long bPolNum, long oPolNum, mbr_t* dbXMBR, mbr_t* dbYMBR, mbr_t* doXMBR, mbr_t* doYMBR, int** djxyCounter, int** djxyVector, char dimSort, char dimSelect, cudaStream_t stream){
+long SortBaseMBROverlap(long bPolNum, long oPolNum, mbr_t* dbXMBR, mbr_t* dbYMBR, mbr_t* doXMBR, mbr_t* doYMBR, int** djxyCounter, int** djxyVector, char dimSort, char dimSelect){
     cudaEvent_t start_GPU, stop_GPU;
     cudaError_t cudaMemError;
     int *dxMBRIndex, *dyMBRIndex, *dxSortIndex, *dySortIndex, *dxSortIndex2, *dySortIndex2, polNum=bPolNum+oPolNum;
@@ -27,7 +26,7 @@ long SortBaseMBROverlap(long bPolNum, long oPolNum, mbr_t* dbXMBR, mbr_t* dbYMBR
 
 
    //------------------------------------------------------ Sort MBRs -------------------------------------------------------------------
-    RadixSort(stream, dbXMBR, dbYMBR, dxMBRIndex, dyMBRIndex, dxSortIndex, dySortIndex, dxSortIndex2, dySortIndex2, 0, MAX_DIGITS-1, MAX_DIGITS, 2*(polNum), dimSort);
+    RadixSort(dbXMBR, dbYMBR, dxMBRIndex, dyMBRIndex, dxSortIndex, dySortIndex, dxSortIndex2, dySortIndex2, 0, MAX_DIGITS-1, MAX_DIGITS, 2*(polNum), dimSort);
    //-----------------------------------------------------------------------------
 
     int chosenDim=0;
@@ -46,9 +45,9 @@ long SortBaseMBROverlap(long bPolNum, long oPolNum, mbr_t* dbXMBR, mbr_t* dbYMBR
     dim3 bDim_CountMBR(1024,1,1), gDim_CountMBR(polNum, 1, 1);    
     //Even digit case so SortIndex is used.
     if(dimSort == 1 || chosenDim == 0)
-       CountSortBaseMBROverlapLoad<<<gDim_CountMBR, bDim_CountMBR, 0, stream>>>(dbXMBR, dbYMBR, bPolNum, oPolNum, dxSortIndex, dySortIndex, dxMBRIndex, dyMBRIndex, *djxyCounter, dimSort); 
+       CountSortBaseMBROverlapLoad<<<gDim_CountMBR, bDim_CountMBR>>>(dbXMBR, dbYMBR, bPolNum, oPolNum, dxSortIndex, dySortIndex, dxMBRIndex, dyMBRIndex, *djxyCounter, dimSort); 
     else
-       CountSortBaseMBROverlapLoad<<<gDim_CountMBR, bDim_CountMBR, 0, stream>>>(dbYMBR, dbXMBR, bPolNum, oPolNum, dySortIndex, dxSortIndex, dyMBRIndex, dxMBRIndex, *djxyCounter, dimSort); 
+       CountSortBaseMBROverlapLoad<<<gDim_CountMBR, bDim_CountMBR>>>(dbYMBR, dbXMBR, bPolNum, oPolNum, dySortIndex, dxSortIndex, dyMBRIndex, dxMBRIndex, *djxyCounter, dimSort); 
     GPUSync("ERROR (CountMBROverlapLoad):");
 
     PrefixSum(polNum, *djxyCounter, NULL, &djxyPSCounter, NULL, 1, 1);
@@ -82,13 +81,14 @@ long SortBaseMBROverlap(long bPolNum, long oPolNum, mbr_t* dbXMBR, mbr_t* dbYMBR
         thPerBlock=128;
         break;
     }
-    dim3 bDim_GetOLMBR(thPerBlock,1,1), gDim_GetOLMBR((polNum)/1000+1, 1000, 1);    
+    // dim3 bDim_GetOLMBR(thPerBlock,1,1), gDim_GetOLMBR((polNum)/1000+1, 1000, 1);    
+    dim3 bDim_GetOLMBR(thPerBlock,1,1), gDim_GetOLMBR((polNum)/1000+1, 1000, 2);    
 
     //Even digit case so SortIndex is used.
     if(dimSort==1 || chosenDim==0)
-       SortBaseMBROverlapLoadCalculated<<<gDim_GetOLMBR, bDim_GetOLMBR, 0, stream>>>(dbXMBR, dbYMBR, bPolNum, oPolNum, dxSortIndex, dySortIndex, dxMBRIndex, dyMBRIndex, *djxyCounter, *djxyVector, djxyPSCounter, dimSort); 
+       SortBaseMBROverlapLoadCalculated<<<gDim_GetOLMBR, bDim_GetOLMBR>>>(dbXMBR, dbYMBR, bPolNum, oPolNum, dxSortIndex, dySortIndex, dxMBRIndex, dyMBRIndex, *djxyCounter, *djxyVector, djxyPSCounter, dimSort); 
     else
-       SortBaseMBROverlapLoadCalculated<<<gDim_GetOLMBR, bDim_GetOLMBR, 0, stream>>>(dbYMBR, dbXMBR, bPolNum, oPolNum, dySortIndex, dxSortIndex, dyMBRIndex, dxMBRIndex, *djxyCounter, *djxyVector, djxyPSCounter, dimSort); 
+       SortBaseMBROverlapLoadCalculated<<<gDim_GetOLMBR, bDim_GetOLMBR>>>(dbYMBR, dbXMBR, bPolNum, oPolNum, dySortIndex, dxSortIndex, dyMBRIndex, dxMBRIndex, *djxyCounter, *djxyVector, djxyPSCounter, dimSort); 
     GPUSync("ERROR (SortBaseMBROverlapLoadCalculated):");
 
     float runningTime_GPU_overlap2;

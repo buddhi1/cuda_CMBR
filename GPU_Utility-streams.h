@@ -239,7 +239,7 @@ void BucketPrefixSum(const int elementNum, int* xIndex, int* yIndex, int* xVecto
 
 
 //================================ RadixSort ===================================
-void RadixSort(mbr_t* dxMBR, mbr_t* dyMBR, int *dxMBRIndex, int* dyMBRIndex, int* dxSortIndex, int* dySortIndex, int* dxSortIndex2, int* dySortIndex2, int lowerDigit, int upperDigit, int digitNum, long elementNum, int dimSort){
+void RadixSort(cudaStream_t stream, mbr_t* dxMBR, mbr_t* dyMBR, int *dxMBRIndex, int* dyMBRIndex, int* dxSortIndex, int* dySortIndex, int* dxSortIndex2, int* dySortIndex2, int lowerDigit, int upperDigit, int digitNum, long elementNum, int dimSort){
     //If dimSort=1, the code sorts just X dimension. If dimSort=2, both dimensions are sorted.
     cudaError_t cudaMemError;
     int *djCounter2, *djVector2, *dxDigitCounter, *dyDigitCounter, *dxPSDigitBucket, *dyPSDigitBucket; 
